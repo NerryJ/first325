@@ -1,0 +1,17 @@
+{
+  "name": "Réglage First 325",
+  "short_name": "First 325",
+  "description": "Simulateur de réglage des voiles du Beneteau First 325, utilisable hors ligne.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EBF0F1",
+  "theme_color": "#13293B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

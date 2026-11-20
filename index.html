@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13293B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>Simulateur First 325</title>
+
+<style>
+/* Layout : poste de barre — réglages à gauche, plan de pont au centre, penons et coach à droite */
+:root{
+  --paper:#EBF0F1; --panel:#F8FAFA; --ink:#13293B; --ink-2:#4F6271; --line:#C8D3D8;
+  --accent:#D45F27; --sea:#2B6C8C; --stbd:#1D8A4B; --port:#C7313A; --warn:#B9800E;
+  --hull:#DCE4E8; --deck:#C9D5DB; --sail:#FFFFFF; --sail-edge:#13293B;
+  --f-display:"Barlow Condensed","Roboto Condensed","sans-serif-condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1820; --panel:#13232D; --ink:#DCE6EB; --ink-2:#93A7B3; --line:#263B4A;
+  --accent:#F07B43; --sea:#5DA9CE; --stbd:#3DC17B; --port:#F0565E; --warn:#E6B347;
+  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1820; --panel:#13232D; --ink:#DCE6EB; --ink-2:#93A7B3; --line:#263B4A;
+  --accent:#F07B43; --sea:#5DA9CE; --stbd:#3DC17B; --port:#F0565E; --warn:#E6B347;
+  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4.2vw,46px);line-height:1;margin:4px 0 0;letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--accent)}
+.scen{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media (max-width:1180px){.grid{grid-template-columns:300px minmax(0,1fr)}.side{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.controls{order:2}.center{order:1}.side{order:3}}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h2{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;color:var(--ink-2);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.controls{display:flex;flex-direction:column;gap:14px}
+.ctl{display:flex;flex-direction:column;gap:3px;padding-block:7px;border-top:1px solid var(--line)}
+.ctl:first-of-type{border-top:0}
+.ctl .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ctl label{font-weight:600;font-size:13.5px}
+.ctl output{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctl .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2)}
+.ctl .hint{font-size:11.5px;color:var(--ink-2);margin:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);margin-top:-7px;cursor:grab}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);cursor:grab}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{flex:1;font:500 12.5px var(--f-body);padding:6px 4px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+
+.center{display:flex;flex-direction:column;gap:14px;min-width:0}
+.inst{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media (max-width:620px){.inst{grid-template-columns:repeat(2,minmax(0,1fr))}.inst .wide{grid-column:1/-1}}
+.cell{background:var(--panel);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cell .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.cell .v{font-family:var(--f-display);font-weight:600;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.cell .v small{font-size:15px;font-weight:500;color:var(--ink-2);margin-left:3px}
+.cell .s{font-size:11.5px;color:var(--ink-2)}
+.meter{position:relative;height:8px;border-radius:4px;margin-top:6px;background:linear-gradient(90deg,var(--stbd) 0 50%,var(--warn) 50% 62.5%,var(--port) 62.5% 100%);opacity:.9}
+.meter i{position:absolute;top:-4px;width:3px;height:16px;background:var(--ink);border-radius:2px;transform:translateX(-50%);transition:left .3s}
+.meter-scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink-2);margin-top:3px}
+
+.plan{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.plan svg{display:block;width:100%;height:auto;max-height:640px}
+.plan .legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-2)}
+.plan .legend b{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 13.5px var(--f-body);padding:9px 14px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:hover{filter:brightness(1.1)}
+
+.side{display:flex;flex-direction:column;gap:18px;min-width:0}
+.tt-rows{display:flex;flex-direction:column;gap:6px}
+.tt{display:grid;grid-template-columns:52px 1fr 1fr;align-items:center;gap:6px}
+.tt .h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.tt svg{width:100%;height:30px;display:block}
+.tt-head{display:grid;grid-template-columns:52px 1fr 1fr;gap:6px;font-size:10.5px;color:var(--ink-2);font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.06em}
+.tt-head .g{color:var(--stbd)} .tt-head .r{color:var(--port)}
+.verdict{margin:10px 0 0;padding:8px 10px;border-radius:7px;font-size:13px;border-left:4px solid var(--ink-2);background:color-mix(in srgb,var(--ink-2) 8%,transparent)}
+.verdict.ok{border-color:var(--stbd);background:color-mix(in srgb,var(--stbd) 10%,transparent)}
+.verdict.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.verdict.bad{border-color:var(--port);background:color-mix(in srgb,var(--port) 10%,transparent)}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.fig{display:flex;flex-direction:column;gap:1px;min-width:0}
+.fig .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);font-family:var(--f-mono)}
+.fig .v{font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums}
+.fig .t{font-size:11px;color:var(--ink-2)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.coach ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.coach li{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:8px 10px;border:1px solid var(--line);border-radius:7px}
+.coach li.diag{border-style:dashed}
+.coach .gain{font-family:var(--f-mono);font-size:12.5px;color:var(--stbd);white-space:nowrap}
+.coach p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
+footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+body{margin:0}
+[hidden]{display:none!important}
+button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tabbar{display:none}
+.coach .actions{margin-top:12px}
+@media (min-width:761px){.center{position:sticky;top:12px}}
+@media (pointer:coarse){
+  input[type=range]{height:36px}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px}
+  input[type=range]::-webkit-slider-thumb{width:28px;height:28px;margin-top:-11px}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px}
+  .seg button{padding:11px 4px;font-size:14px}
+  .chip{padding:9px 13px}
+  .toggle input{width:22px;height:22px}
+}
+@media (max-width:760px){
+  body{padding-block:8px calc(76px + env(safe-area-inset-bottom,0px))}
+  header{gap:8px}
+  header .eyebrow{display:none}
+  h1{font-size:24px}
+  .scen{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none;width:calc(100% + 32px)}
+  .scen::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap}
+  .wrap{gap:10px}
+  .center{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:6px 8px;gap:6px;border-bottom:1px solid var(--line)}
+  .inst{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .inst .wide{grid-column:auto}
+  .cell{padding:6px 7px}
+  .cell .k{font-size:9px;letter-spacing:.05em}
+  .cell .v{font-size:22px}
+  .cell .v small{font-size:11px;margin-left:1px}
+  .cell .s,.meter-scale,.plan .legend{display:none}
+  .meter{height:5px;margin-top:5px}
+  .meter i{height:11px;top:-3px}
+  .plan svg{max-height:33vh}
+  .side{display:flex;flex-direction:column}
+  .tabbar{display:flex;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--panel);border-top:1px solid var(--line);
+    padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+  .tabbar button{flex:1;font:600 15px var(--f-body);padding:12px 4px;border-radius:8px;border:0;background:transparent;color:var(--ink-2);cursor:pointer}
+  .tabbar button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+  body[data-tab="reglages"] .side,
+  body[data-tab="penons"] .controls,body[data-tab="coach"] .controls,
+  body[data-tab="penons"] .p-coach,body[data-tab="coach"] .p-penons,
+  body:not([data-tab="coach"]) footer{display:none}
+}
+</style>
+
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Beneteau First 325 · tribord amures · modèle simplifié</div>
+      <h1>Simulateur de réglage <span>First 325</span></h1>
+    </div>
+    <div class="scen" id="scen" role="group" aria-label="Situations de départ"></div>
+  </header>
+
+  <div class="grid">
+    <!-- Réglages -->
+    <section class="controls" aria-label="Réglages">
+      <div class="panel">
+        <h2>Conditions</h2>
+        <div class="ctl"><div class="top"><label for="tws">Vent réel</label><output id="o-tws"></output></div>
+          <input type="range" id="tws" data-key="tws" min="2" max="35" step="1"></div>
+        <div class="ctl"><div class="top"><label for="twa">Angle au vent réel</label><output id="o-twa"></output></div>
+          <input type="range" id="twa" data-key="twa" min="30" max="180" step="1">
+          <div class="ends"><span>Près serré</span><span>Travers</span><span>Vent arrière</span></div></div>
+        <div class="ctl"><label class="toggle"><input type="checkbox" id="rappel"> Équipage au rappel</label></div>
+      </div>
+
+      <div class="panel">
+        <h2>Grand-voile</h2>
+        <div class="ctl"><div class="top"><label>Ris</label><output id="o-ris"></output></div>
+          <div class="seg" id="ris" role="group" aria-label="Ris"><button data-v="0">Haute</button><button data-v="1">1 ris</button><button data-v="2">2 ris</button></div></div>
+        <div class="ctl"><div class="top"><label for="ecouteGV">Écoute de GV</label><output id="o-ecouteGV"></output></div>
+          <input type="range" id="ecouteGV" data-key="ecouteGV" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div>
+          <p class="hint">Ouvre la bôme. Près du vent, elle tend aussi la chute.</p></div>
+        <div class="ctl"><div class="top"><label for="chariot">Chariot de GV</label><output id="o-chariot"></output></div>
+          <input type="range" id="chariot" data-key="chariot" min="-100" max="100" step="1">
+          <div class="ends"><span>Au vent</span><span>Axe</span><span>Sous le vent</span></div></div>
+        <div class="ctl"><div class="top"><label for="halebas">Hale-bas</label><output id="o-halebas"></output></div>
+          <input type="range" id="halebas" data-key="halebas" min="0" max="100" step="1">
+          <p class="hint">Tient la chute quand l'écoute ne tire plus vers le bas.</p></div>
+        <div class="ctl"><div class="top"><label for="bordure">Bordure</label><output id="o-bordure"></output></div>
+          <input type="range" id="bordure" data-key="bordure" min="0" max="100" step="1"></div>
+        <div class="ctl"><div class="top"><label for="cunningham">Cunningham</label><output id="o-cunningham"></output></div>
+          <input type="range" id="cunningham" data-key="cunningham" min="0" max="100" step="1">
+          <p class="hint">Ramène le creux vers l'avant quand le vent forcit.</p></div>
+        <div class="ctl"><div class="top"><label for="pataras">Pataras</label><output id="o-pataras"></output></div>
+          <input type="range" id="pataras" data-key="pataras" min="0" max="100" step="1">
+          <p class="hint">Cintre le mât et raidit l'étai : aplatit les deux voiles.</p></div>
+      </div>
+
+      <div class="panel">
+        <h2>Génois</h2>
+        <div class="ctl"><div class="top"><label for="enrouleur">Enrouleur</label><output id="o-enrouleur"></output></div>
+          <input type="range" id="enrouleur" data-key="enrouleur" min="50" max="100" step="5">
+          <div class="ends"><span>Roulé</span><span>Déroulé (140 %)</span></div></div>
+        <div class="ctl"><div class="top"><label for="ecouteG">Écoute de génois</label><output id="o-ecouteG"></output></div>
+          <input type="range" id="ecouteG" data-key="ecouteG" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div></div>
+        <div class="ctl"><div class="top"><label for="pointTire">Point de tire</label><output id="o-pointTire"></output></div>
+          <input type="range" id="pointTire" data-key="pointTire" min="-100" max="100" step="1">
+          <div class="ends"><span>Avancé</span><span>Reculé</span></div>
+          <p class="hint">Avancé : chute fermée, fond creux. Reculé : le haut s'ouvre.</p></div>
+      </div>
+    </section>
+
+    <!-- Centre -->
+    <section class="center" aria-label="Bateau">
+      <div class="inst">
+        <div class="cell"><span class="k">Vitesse</span><span class="v" id="i-bs">0</span><span class="s" id="i-pol"></span></div>
+        <div class="cell"><span class="k">Vent apparent</span><span class="v" id="i-awa">0</span><span class="s" id="i-aws"></span></div>
+        <div class="cell"><span class="k">VMG</span><span class="v" id="i-vmg">0</span><span class="s" id="i-vmgs"></span></div>
+        <div class="cell"><span class="k">Barre</span><span class="v" id="i-helm">0</span><span class="s" id="i-helms"></span></div>
+        <div class="cell wide"><span class="k">Gîte</span><span class="v" id="i-heel">0</span>
+          <div class="meter" aria-hidden="true"><i id="i-heelm"></i></div>
+          <div class="meter-scale"><span>0</span><span>10</span><span>20</span><span>30</span><span>40°</span></div></div>
+      </div>
+      <div class="plan">
+        <svg id="plan" viewBox="0 0 560 560" role="img" aria-label="Vue de dessus du bateau, des voiles et du vent">
+          <g id="particles" stroke="var(--sea)" stroke-width="1.4" stroke-linecap="round" opacity=".38"></g>
+          <path d="M280,40 C320,90 358,190 355,300 C353,380 342,440 335,470 L225,470 C218,440 207,380 205,300 C202,190 240,90 280,40 Z" fill="var(--hull)" stroke="var(--ink)" stroke-width="1.6"/>
+          <path d="M243,378 L317,378 L320,462 L240,462 Z" fill="var(--deck)" stroke="var(--ink-2)" stroke-width="1"/>
+          <line x1="246" y1="392" x2="314" y2="392" stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="222" y1="264" x2="222" y2="336" stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="280" y1="52" x2="280" y2="212" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 4"/>
+          <!-- génois -->
+          <line id="g-sheet" stroke="var(--accent)" stroke-width="1.2"/>
+          <line id="g-sheet2" stroke="var(--accent)" stroke-width="1.2"/>
+          <path id="g-sail" fill="var(--sail)" fill-opacity=".72" stroke="var(--sail-edge)" stroke-width="1.8" stroke-linejoin="round"/>
+          <line id="g-top" stroke="var(--sail-edge)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>
+          <rect id="g-car" width="10" height="7" rx="2" fill="var(--accent)"/>
+          <!-- GV -->
+          <line id="m-sheet" stroke="var(--accent)" stroke-width="1.2"/>
+          <path id="m-sail" fill="var(--sail)" fill-opacity=".85" stroke="var(--sail-edge)" stroke-width="1.8" stroke-linejoin="round"/>
+          <line id="m-boom" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <line id="m-top" stroke="var(--sail-edge)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>
+          <rect id="m-car" width="10" height="8" rx="2" fill="var(--accent)"/>
+          <circle cx="280" cy="212" r="6" fill="var(--ink)"/>
+          <circle cx="280" cy="52" r="3" fill="var(--ink)"/>
+          <!-- vents -->
+          <g id="w-true"><line stroke="var(--sea)" stroke-width="3"/><path fill="var(--sea)"/><text font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--sea)"></text></g>
+          <g id="w-app"><line stroke="var(--accent)" stroke-width="3"/><path fill="var(--accent)"/><text font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--accent)"></text></g>
+        </svg>
+        <div class="legend"><span><b style="background:var(--sea)"></b>Vent réel</span><span><b style="background:var(--accent)"></b>Vent apparent</span><span><b style="background:var(--ink-2);height:1px;border-top:1px dashed var(--ink-2)"></b>Section haute (vrillage)</span></div>
+      </div>
+    </section>
+
+    <!-- Penons & coach -->
+    <section class="side" aria-label="Lecture des voiles">
+      <div class="panel p-penons">
+        <h2>Génois <span id="g-score" class="eyebrow"></span></h2>
+        <div class="tt-head"><span></span><span class="g">Au vent · tribord</span><span class="r">Sous le vent · bâbord</span></div>
+        <div class="tt-rows" id="g-tt"></div>
+        <div class="verdict" id="g-verdict"></div>
+        <div class="figs" id="g-figs"></div>
+      </div>
+      <div class="panel p-penons">
+        <h2>Grand-voile <span id="m-score" class="eyebrow"></span></h2>
+        <div class="tt-head"><span></span><span>Penons de chute</span><span></span></div>
+        <div class="tt-rows" id="m-tt"></div>
+        <div class="verdict" id="m-verdict"></div>
+        <div class="figs" id="m-figs"></div>
+      </div>
+      <div class="panel coach p-coach">
+        <h2>Coach</h2>
+        <p>Ce que je toucherais en premier, avec le gain de vitesse estimé.</p>
+        <ul id="coach"></ul>
+        <div class="actions">
+          <button class="btn" id="opt">Montrer le réglage optimal</button>
+          <button class="btn ghost" id="reset">Revenir à la situation de départ</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <nav class="tabbar" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="reglages">Réglages</button>
+    <button role="tab" data-tab="penons">Penons</button>
+    <button role="tab" data-tab="coach">Coach</button>
+  </nav>
+
+  <footer>Modèle pédagogique : polaire, surfaces (GV ≈ 25 m², génois 140 % ≈ 33 m²) et réactions sont des approximations pour un First 325 et ne remplacent pas les polaires officielles. Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
+</div>
+
+<script>
+(function(){
+const D2R=Math.PI/180, clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fr1=(n,d=1)=>n.toFixed(d).replace('.',',');
+
+/* ---------- Modèle ---------- */
+const FA=[[30,0],[33,.5],[36,.72],[40,.83],[44,.88],[50,.915],[60,.95],[75,.985],[90,1],[110,1],[125,.97],[140,.91],[155,.83],[170,.76],[180,.73]];
+function interp(t,x){if(x<=t[0][0])return t[0][1];for(let i=1;i<t.length;i++){if(x<=t[i][0]){const[a,b]=t[i-1],[c,d]=t[i];return b+(d-b)*(x-a)/(c-a)}}return t[t.length-1][1]}
+function polar(tws,twa){const base=7.6*(1-Math.exp(-tws/6));const surf=1+Math.max(0,(tws-18)/40)*Math.max(0,(twa-100)/80);return base*interp(FA,twa)*surf}
+
+const MAXB=78, MAXG=70, OPTG=16, OPTM=15, H=.45;
+function evaluate(s){
+  const fr=s.enrouleur/100, A_M=25.5*[1,.78,.6][s.ris], A_G=33*fr;
+  const o=s.bordure/100,b=s.pataras/100,c=s.cunningham/100,v=s.halebas/100,t=s.chariot/100,car=s.pointTire/100;
+  const boom=clamp(2+6*t+75*Math.pow(s.ecouteGV/100,1.5),0,MAXB);
+  const sheetDown=clamp(1-s.ecouteGV/35,0,1);
+  const twM=3+20*(1-Math.max(v*.9,sheetDown))+s.ris;
+  const depthM=15.5-4.5*o-3*b-.8*c-1.2*s.ris;
+  const angG=8+62*Math.pow(s.ecouteG/100,1.5);
+  const twG=clamp(5+7*car,0,20)+Math.max(0,angG-15)*.15+(1-fr)*4;
+  const depthG=clamp(14-3.5*b-1.5*car+(1-fr)*3,5,18);
+  const pol=polar(s.tws,s.twa);
+  function core(bs){
+    const a=s.twa*D2R, ax=s.tws*Math.sin(a), ay=s.tws*Math.cos(a)+bs;
+    const aws=Math.hypot(ax,ay), awa=Math.atan2(ax,ay)/D2R;
+    const blanket=awa>145;
+    const dw=5*clamp(A_G/33,0,1)*(awa<90?1:clamp(1-(awa-90)/40,0,1));
+    const aoaG=h=>awa+4*h-angG-twG*h, aoaM=h=>awa-dw+4*h-boom-twM*h;
+    const tgtG=Math.max(OPTG,awa+4*H-MAXG-twG*H), tgtM=Math.max(OPTM,awa-dw+4*H-MAXB-twM*H);
+    const dG=aoaG(H)-tgtG, dM=aoaM(H)-tgtM;
+    const wG=3.5+.25*(depthG-8), wM=3.5+.25*(depthM-8);
+    const sc=(d,w)=>Math.max(.02,d<0?Math.exp(-1*(d/w)**2)*(d<-7?.75:1)+.03:1/(1+(d/(w*1.7))**2));
+    const sG=sc(dG,wG), sM=sc(dM,wM);
+    const idealDepth=Math.min(15.5,(s.tws<=6?14:s.tws>=20?8:14-(s.tws-6)*6/14)+(awa>60?2.5:0));
+    const dsM=Math.exp(-1*((depthM-idealDepth)/3.5)**2), dsG=Math.exp(-1*((depthG-idealDepth)/3.5)**2);
+    const cunIdeal=awa<70?clamp((s.tws-12)/10,0,1):0, cunS=1-.15*Math.abs(c-cunIdeal);
+    const idealTwM=awa<60?(s.tws<10?7+(10-s.tws)*1.2:s.tws<=14?7:Math.min(18,7+(s.tws-14))):(s.tws<8?12:10);
+    const idealTwG=awa<60?4+Math.max(0,s.tws-14)*.8+(s.tws<6?2:0):8;
+    const tsM=1/(1+((twM-idealTwM)/6)**2), tsG=1/(1+((twG-idealTwG)/5)**2);
+    const aoaPow=d=>d<0?clamp(1+d/8,.05,1):1;
+    const gK=blanket?.35:1;
+    const P_heel=A_M*aoaPow(dM)*Math.pow(depthM/12,.7)*(1-(twM-5)/40)+A_G*gK*aoaPow(dG)*Math.pow(depthG/12,.7)*(1-(twG-4)/40);
+    const hc=Math.max(.1,Math.cos(awa*D2R))+.15;
+    const heel=40*(1-Math.exp(-1*(aws*aws*P_heel*hc/1000)/(s.rappel?30.5:26.6)));
+    const P_drive=A_M*sM*Math.sqrt(depthM/12)+A_G*gK*sG*Math.sqrt(depthG/12);
+    const ratio=P_drive/(25.5+33*gK);
+    const e=clamp(.55*(1-(s.tws-5)/13),0,.55);
+    const powerF=Math.min(1.02,Math.pow(ratio,e));
+    const effHeel=heel<=20?1:Math.max(.3,1-((heel-20)/16)**2);
+    const helm=awa>150?1:1.5+Math.max(0,heel-12)*.45+Math.max(0,idealTwM-twM)*.2+(A_G/(A_G+A_M)<.45?1.5:0);
+    const helmPen=helm>10?.9:helm>7?.96:1;
+    const wg=blanket?.08:awa>120?.25:.4;
+    const trimQ=Math.pow(sG,wg)*Math.pow(sM,.4)*Math.pow(dsM*cunS,.1)*Math.pow(dsG,.08)*Math.pow(tsM,.12)*Math.pow(tsG,.08);
+    const bsN=pol*(.45+.55*Math.pow(trimQ,.8))*effHeel*powerF*helmPen;
+    return {bs:bsN,aws,awa,blanket,dw,aoaG,aoaM,tgtG,tgtM,dG,dM,sG,sM,idealDepth,cunIdeal,idealTwM,idealTwG,heel,helm,trimQ,tsM,tsG,dsM,dsG};
+  }
+  // aérodynamique évaluée au vent apparent de la vitesse polaire (évite les équilibres bloqués)
+  const r=core(pol), a=s.twa*D2R, ax=s.tws*Math.sin(a), ay=s.tws*Math.cos(a)+r.bs;
+  r.awaShow=Math.atan2(ax,ay)/D2R; r.awsShow=Math.hypot(ax,ay);
+  return Object.assign(r,{boom,twM,depthM,angG,twG,depthG,A_M,A_G,pol,fr});
+}
+
+/* ---------- Situations ---------- */
+const SCEN=[
+ {id:'pres12',name:'Près · 12 nds',s:{tws:12,twa:42,rappel:false,ris:0,ecouteGV:6,chariot:0,halebas:10,bordure:30,cunningham:0,pataras:15,enrouleur:100,ecouteG:0,pointTire:-30}},
+ {id:'pres20',name:'Près · 20 nds',s:{tws:20,twa:42,rappel:true,ris:0,ecouteGV:5,chariot:10,halebas:20,bordure:30,cunningham:0,pataras:10,enrouleur:100,ecouteG:8,pointTire:0}},
+ {id:'petit',name:'Petit temps · 5 nds',s:{tws:5,twa:45,rappel:false,ris:0,ecouteGV:0,chariot:0,halebas:50,bordure:90,cunningham:60,pataras:80,enrouleur:100,ecouteG:4,pointTire:40}},
+ {id:'travers',name:'Travers · 14 nds',s:{tws:14,twa:90,rappel:false,ris:0,ecouteGV:12,chariot:0,halebas:20,bordure:60,cunningham:20,pataras:40,enrouleur:100,ecouteG:15,pointTire:0}},
+ {id:'largue',name:'Grand largue · 16 nds',s:{tws:16,twa:140,rappel:false,ris:0,ecouteGV:55,chariot:40,halebas:0,bordure:50,cunningham:0,pataras:30,enrouleur:100,ecouteG:55,pointTire:-20}},
+ {id:'arriere',name:'Vent arrière · 10 nds',s:{tws:10,twa:172,rappel:false,ris:0,ecouteGV:70,chariot:80,halebas:30,bordure:40,cunningham:0,pataras:20,enrouleur:100,ecouteG:80,pointTire:0}}
+];
+let scenId='pres12';
+let S=Object.assign({},SCEN[0].s);
+try{const saved=JSON.parse(localStorage.getItem('f325-state')||'null');if(saved&&saved.S){S=Object.assign(S,saved.S);scenId=saved.scen||null}}catch(e){}
+const save=()=>{try{localStorage.setItem('f325-state',JSON.stringify({S,scen:scenId}))}catch(e){}};
+
+/* ---------- Libellés ---------- */
+const VAL={
+ tws:v=>v+' nds', twa:v=>v+'°', ris:v=>['voile haute','1 ris','2 ris'][v],
+ ecouteGV:v=>v<4?'à bloc':'choquée '+v+' %', chariot:v=>v===0?'dans l’axe':(v<0?'au vent ':'sous le vent ')+Math.abs(v)+' %',
+ halebas:v=>v<5?'mou':v+' %', bordure:v=>v<15?'relâchée':v>85?'étarquée':v+' %', cunningham:v=>v<5?'mou':v+' %', pataras:v=>v<5?'mou':v+' %',
+ enrouleur:v=>v+' % déroulé', ecouteG:v=>v<4?'à bloc':'choquée '+v+' %', pointTire:v=>v===0?'milieu':(v<0?'avancé ':'reculé ')+Math.abs(v)+' %'
+};
+const KEYS=['ecouteGV','chariot','halebas','bordure','cunningham','pataras','ecouteG','pointTire','enrouleur','ris'];
+const RANGE={ecouteGV:[0,100],chariot:[-100,100],halebas:[0,100],bordure:[0,100],cunningham:[0,100],pataras:[0,100],ecouteG:[0,100],pointTire:[-100,100],enrouleur:[50,100],ris:[0,2]};
+const STEP={ecouteGV:4,chariot:15,halebas:12,bordure:15,cunningham:15,pataras:15,ecouteG:4,pointTire:20,enrouleur:15,ris:1};
+const ACT={ecouteGV:['Border l’écoute de GV','Choquer l’écoute de GV'],chariot:['Monter le chariot au vent','Descendre le chariot sous le vent'],
+ halebas:['Mollir le hale-bas','Reprendre le hale-bas'],bordure:['Relâcher la bordure','Étarquer la bordure'],cunningham:['Mollir le cunningham','Reprendre le cunningham'],
+ pataras:['Mollir le pataras','Reprendre le pataras'],ecouteG:['Border l’écoute de génois','Choquer l’écoute de génois'],
+ pointTire:['Avancer le point de tire','Reculer le point de tire'],enrouleur:['Rouler du génois','Dérouler du génois'],ris:['Larguer un ris','Prendre un ris']};
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const scenBox=$('scen');
+SCEN.forEach(sc=>{const b=document.createElement('button');b.className='chip';b.textContent=sc.name;b.dataset.id=sc.id;
+  b.addEventListener('click',()=>{scenId=sc.id;S=Object.assign({},sc.s);syncInputs();update()});scenBox.appendChild(b)});
+document.querySelectorAll('input[type=range]').forEach(inp=>{
+  inp.addEventListener('input',()=>{S[inp.dataset.key]=+inp.value;update()})});
+$('rappel').addEventListener('change',e=>{S.rappel=e.target.checked;update()});
+$('ris').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{S.ris=+b.dataset.v;update()}));
+$('reset').addEventListener('click',()=>{const sc=SCEN.find(x=>x.id===scenId)||SCEN[0];scenId=sc.id;S=Object.assign({},sc.s);syncInputs();update()});
+$('opt').addEventListener('click',()=>{S=optimize(S);syncInputs();update()});
+
+function syncInputs(){
+  document.querySelectorAll('input[type=range]').forEach(inp=>{inp.value=S[inp.dataset.key]});
+  $('rappel').checked=!!S.rappel;
+}
+
+function optimize(s0){
+  let s=Object.assign({},s0), best=evaluate(s).bs;
+  for(const step of [40,20,10,5,2,1]){
+    let improved=true, guard=0;
+    while(improved&&guard++<30){improved=false;
+      for(const k of KEYS){
+        const st=k==='ris'?1:k==='enrouleur'?Math.max(5,Math.round(step/5)*5):step;
+        for(const dir of [-1,1]){
+          const [mn,mx]=RANGE[k], nv=clamp(s[k]+dir*st,mn,mx); if(nv===s[k])continue;
+          const t=Object.assign({},s,{[k]:nv}), bs=evaluate(t).bs;
+          if(bs>best+1e-4){best=bs;s=t;improved=true}
+        }
+      }
+    }
+  }
+  return s;
+}
+
+/* Penons */
+const TT_ROWS=[['Haut',.8],['Milieu',.45],['Bas',.15]];
+const ttEls={g:[],m:[]};
+function mkTT(container,key,pairs){
+  TT_ROWS.forEach(([lab])=>{const row=document.createElement('div');row.className='tt';
+    row.innerHTML='<span class="h">'+lab+'</span>'+(pairs?'<svg viewBox="0 0 80 30"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--stbd)" stroke-width="2.4" stroke-linecap="round"/></svg><svg viewBox="0 0 80 30"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--port)" stroke-width="2.4" stroke-linecap="round"/></svg>'
+      :'<svg viewBox="0 0 80 30" style="grid-column:span 2;max-width:180px"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--warn)" stroke-width="2.4" stroke-linecap="round"/></svg>');
+    container.appendChild(row);
+    const paths=row.querySelectorAll('path');ttEls[key].push({paths:[...paths],state:['stream','stream'],seed:Math.random()*6});
+  });
+}
+mkTT($('g-tt'),'g',true);mkTT($('m-tt'),'m',false);
+
+function ttPath(state,t,seed){
+  const N=14;let d='';
+  for(let i=0;i<=N;i++){const f=i/N;let x,y;
+    if(state==='stream'){x=7+f*66;y=15+Math.sin(f*7-t*9+seed)*1.8*f}
+    else if(state==='lift'){x=7+f*52;y=15-f*11+Math.sin(f*9-t*15+seed)*4*f}
+    else if(state==='droop'){x=7+f*18+Math.sin(t*2.5+seed)*2*f;y=15+f*13+Math.sin(f*6-t*4+seed)*1.2*f}
+    else if(state==='flap'){x=7+f*58;y=15+Math.sin(f*5-t*19+seed)*7*f+Math.sin(t*23+seed)*3*f}
+    else {x=7+f*10;y=15+f*12}
+    d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);
+  }
+  return d;
+}
+function classify(d){return d<-7?'flap':d<-2.5?'ww':d<=3.5?'ok':'lw'}
+
+/* Plan de pont */
+const svgNS='http://www.w3.org/2000/svg', CX=280, CY=258;
+const parts=[];const pg=$('particles');
+for(let i=0;i<46;i++){const l=document.createElementNS(svgNS,'line');pg.appendChild(l);parts.push({el:l,x:Math.random()*560,y:Math.random()*560})}
+function sailPath(lx,ly,cx,cy,depth,pos){
+  const dx=cx-lx,dy=cy-ly,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux; // normal vers bâbord (sous le vent)
+  const sx=lx+ux*L*pos+nx*L*depth*2, sy=ly+uy*L*pos+ny*L*depth*2;
+  return 'M'+lx+','+ly+' Q'+sx.toFixed(1)+','+sy.toFixed(1)+' '+cx.toFixed(1)+','+cy.toFixed(1)+' Z';
+}
+function arrow(g,angDeg,label,r1,r2){
+  const a=angDeg*D2R,ux=Math.sin(a),uy=-Math.cos(a);
+  const x1=CX+ux*r1,y1=CY+uy*r1,x2=CX+ux*r2,y2=CY+uy*r2;
+  const [ln,hd,tx]=g.children;
+  ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);ln.setAttribute('x2',x2+ux*10);ln.setAttribute('y2',y2+uy*10);
+  const px=-uy,py=ux;
+  hd.setAttribute('d','M'+x2+','+y2+' L'+(x2+ux*16+px*7)+','+(y2+uy*16+py*7)+' L'+(x2+ux*16-px*7)+','+(y2+uy*16-py*7)+' Z');
+  const lx=CX+ux*(r1+14), ly=CY+uy*(r1+14);
+  tx.setAttribute('x',clamp(lx,8,552));tx.setAttribute('y',clamp(ly+4,16,552));
+  tx.setAttribute('text-anchor',ux>.3?'end':ux<-.3?'start':'middle');tx.textContent=label;
+}
+const setL=(el,x1,y1,x2,y2)=>{el.setAttribute('x1',x1);el.setAttribute('y1',y1);el.setAttribute('x2',x2);el.setAttribute('y2',y2)};
+
+let R=null, flow={x:0,y:0};
+function update(){
+  R=evaluate(S);
+  // contrôles
+  for(const k in VAL){const o=$('o-'+k);if(o)o.textContent=VAL[k](S[k])}
+  $('ris').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===S.ris));
+  scenBox.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===scenId));
+
+  // instruments
+  $('i-bs').innerHTML=fr1(R.bs,2)+'<small>nds</small>';
+  $('i-pol').textContent=R.pol>0?Math.round(R.bs/R.pol*100)+' % de la polaire ('+fr1(R.pol)+')':'Dans le lit du vent';
+  $('i-awa').innerHTML=Math.round(R.awaShow)+'<small>°</small>';
+  $('i-aws').textContent=fr1(R.awsShow)+' nds apparents';
+  const vmg=R.bs*Math.cos(S.twa*D2R);
+  $('i-vmg').innerHTML=fr1(Math.abs(vmg),2)+'<small>nds</small>';
+  $('i-vmgs').textContent=vmg>=0?'au vent':'sous le vent';
+  $('i-heel').innerHTML=Math.round(R.heel)+'<small>°</small>';
+  $('i-heelm').style.left=clamp(R.heel/40*100,0,100)+'%';
+  $('i-helm').innerHTML=fr1(R.helm,0)+'<small>°</small>';
+  $('i-helms').textContent=R.helm<3?'neutre':R.helm<=6?'légèrement ardente':R.helm<=9?'ardente':'très ardente, le bateau lofe';
+
+  // plan
+  const b=R.boom*D2R, bx=CX-170*Math.sin(b), by=212+170*Math.cos(b);
+  $('m-sail').setAttribute('d',sailPath(CX,212,bx,by,R.depthM/100,.45));
+  setL($('m-boom'),CX,212,bx,by);
+  const tb=(R.boom+R.twM)*D2R; setL($('m-top'),CX,212,CX-80*Math.sin(tb),212+80*Math.cos(tb));
+  const carX=CX-32*S.chariot/100; $('m-car').setAttribute('x',carX-5);$('m-car').setAttribute('y',388);
+  setL($('m-sheet'),CX-160*Math.sin(b),212+160*Math.cos(b),carX,392);
+  const g=R.angG*D2R, LP=229*R.fr, gx=CX-LP*Math.sin(g), gy=52+LP*Math.cos(g);
+  $('g-sail').setAttribute('d',sailPath(CX,52,gx,gy,R.depthG/100,.4));
+  const tg=(R.angG+R.twG)*D2R; setL($('g-top'),CX,182,CX-LP*.32*Math.sin(tg),182+LP*.32*Math.cos(tg));
+  const gcy=300+32*S.pointTire/100; $('g-car').setAttribute('x',217);$('g-car').setAttribute('y',gcy-3.5);
+  setL($('g-sheet'),gx,gy,222,gcy);setL($('g-sheet2'),222,gcy,240,400);
+  const aAng=Math.atan2(S.tws*Math.sin(S.twa*D2R),S.tws*Math.cos(S.twa*D2R)+R.bs)/D2R;
+  arrow($('w-true'),S.twa,'Réel '+S.tws+' nds',262,222);
+  arrow($('w-app'),aAng,'App. '+fr1(R.awsShow)+' nds',262,222);
+  const a=S.twa*D2R; flow.x=-S.tws*Math.sin(a); flow.y=S.tws*Math.cos(a)+R.bs; // svg coords (y vers le bas)
+
+  // génois
+  const gStates=TT_ROWS.map(([,h])=>R.blanket?'blank':classify(R.aoaG(h)-R.tgtG));
+  gStates.forEach((st,i)=>{const e=ttEls.g[i];e.state=st==='blank'?['droop','droop']:st==='flap'?['flap','flap']:st==='ww'?['lift','stream']:st==='lw'?['stream','droop']:['stream','stream']});
+  const gv=$('g-verdict'), gm=gStates[1];
+  const topVsBot=gStates[0]!==gStates[2];
+  let gtxt,gcls;
+  if(R.blanket){gtxt='Génois déventé derrière la GV : il ne porte plus. Enroule-le ou tangonne-le en ciseaux.';gcls='warn'}
+  else if(gm==='flap'){gtxt='Le guindant fasseye : borde franchement ou abats.';gcls='bad'}
+  else if(gm==='ww'){gtxt='Penon au vent qui se lève : borde l’écoute ou abats un peu.';gcls='warn'}
+  else if(gm==='lw'){gtxt='Penon sous le vent qui décroche : choque l’écoute ou lofe.';gcls='warn'}
+  else {gtxt='Les deux penons filent au milieu.';gcls='ok'}
+  if(!R.blanket&&topVsBot){
+    if(gStates[0]==='ww'||gStates[0]==='flap'||gStates[2]==='lw')gtxt+=' Le haut lève avant le bas : avance le point de tire pour fermer la chute.';
+    else gtxt+=' Le bas lève avant le haut : recule le point de tire pour ouvrir la chute.';
+    if(gcls==='ok')gcls='warn';
+  }
+  gv.className='verdict '+gcls; gv.textContent=gtxt;
+  $('g-score').textContent=Math.round(R.sG*100)+' %';
+  $('g-figs').innerHTML=fig('Incidence',Math.round(R.aoaG(H))+'°','cible '+Math.round(R.tgtG)+'°')+fig('Creux',fr1(R.depthG,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Vrillage',Math.round(R.twG)+'°','cible '+Math.round(R.idealTwG)+'°');
+
+  // GV
+  const lim=[3,6,9], mStates=lim.map(l=>R.twM<R.idealTwM-l?'curl':'stream');
+  mStates.forEach((st,i)=>{ttEls.m[i].state=[st==='curl'?'droop':'stream']});
+  const mv=$('m-verdict'), mc=classify(R.dM);
+  let mtxt,mcls='ok';
+  if(mc==='flap'){mtxt='La GV fasseye au guindant : borde l’écoute ou monte le chariot.';mcls='bad'}
+  else if(mc==='ww'){mtxt='Incidence trop faible : la GV porte mal. Borde un peu ou monte le chariot au vent.';mcls='warn'}
+  else if(mc==='lw'){mtxt=R.awa>70?'GV trop bordée pour cette allure : choque l’écoute.':'Bôme trop au vent pour ce vent : descends le chariot ou choque un peu.';mcls='warn'}
+  else mtxt=R.tgtM>OPTM+1?'GV choquée jusqu’aux barres de flèche, c’est le maximum à cette allure.':'Bonne incidence sur la bôme.';
+  if(mStates[0]==='curl'){mtxt+=' Le penon de chute du haut se cache : chute trop fermée, ouvre-la (écoute ou hale-bas).';if(mcls==='ok')mcls='warn'}
+  else if(R.twM>R.idealTwM+6){mtxt+=' Chute très ouverte : le haut ne porte plus, reprends le hale-bas ou l’écoute.';if(mcls==='ok')mcls='warn'}
+  mv.className='verdict '+mcls; mv.textContent=mtxt;
+  $('m-score').textContent=Math.round(R.sM*100)+' %';
+  $('m-figs').innerHTML=fig('Incidence',Math.round(R.aoaM(H))+'°','cible '+Math.round(R.tgtM)+'°')+fig('Creux',fr1(R.depthM,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Vrillage',Math.round(R.twM)+'°','cible '+Math.round(R.idealTwM)+'°');
+
+  renderCoach();
+  save();
+}
+function fig(k,v,t){return '<div class="fig"><span class="k">'+k+'</span><span class="v">'+v+'</span><span class="t">'+t+'</span></div>'}
+
+function renderCoach(){
+  const base=R.bs, items=[];
+  for(const k of KEYS){
+    for(const dir of [-1,1]){
+      const [mn,mx]=RANGE[k], nv=clamp(S[k]+dir*STEP[k],mn,mx); if(nv===S[k])continue;
+      const gain=evaluate(Object.assign({},S,{[k]:nv})).bs-base;
+      if(gain>.02)items.push({txt:ACT[k][dir<0?0:1],gain});
+    }
+  }
+  items.sort((a,b)=>b.gain-a.gain);
+  const diag=[];
+  if(R.heel>25)diag.push('Trop de gîte ('+Math.round(R.heel)+'°) : le bateau dérape et la barre durcit. Réduis la puissance avant le reste.');
+  else if(R.heel<6&&S.tws>=7&&R.awa<70)diag.push('Peu de gîte : il reste de la puissance à prendre.');
+  if(R.helm>7&&R.awa<150)diag.push('Barre ardente : ouvre la chute de GV ou descends le chariot.');
+  if(R.blanket)diag.push('Au vent arrière, le génois est masqué par la GV : enrouleur ou ciseaux.');
+  let html=diag.map(d=>'<li class="diag"><span>'+d+'</span></li>').join('');
+  html+=items.slice(0,4).map(i=>'<li><span>'+i.txt+'</span><span class="gain">+'+fr1(i.gain,2)+' nd</span></li>').join('');
+  if(!items.length)html+='<li><span>Réglage au point : plus rien à gagner sur ces commandes.</span><span class="gain">✓</span></li>';
+  $('coach').innerHTML=html;
+}
+
+/* Animation */
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;const t=reduce?0:now/1000;
+  ['g','m'].forEach(k=>ttEls[k].forEach(e=>e.paths.forEach((p,i)=>p.setAttribute('d',ttPath(e.state[i],t,e.seed+i)))));
+  const sp=Math.hypot(flow.x,flow.y)||1, ux=flow.x/sp, uy=flow.y/sp, v=reduce?0:(30+sp*6)*dt;
+  for(const p of parts){p.x+=ux*v;p.y+=uy*v;
+    if(p.x<-20)p.x+=600;if(p.x>580)p.x-=600;if(p.y<-20)p.y+=600;if(p.y>580)p.y-=600;
+    setL(p.el,p.x,p.y,p.x-ux*12,p.y-uy*12)}
+  requestAnimationFrame(frame);
+}
+/* Onglets (téléphone) */
+let tab='reglages';
+try{tab=localStorage.getItem('f325-tab')||tab}catch(e){}
+function setTab(t){tab=t;document.body.dataset.tab=t;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  try{localStorage.setItem('f325-tab',t)}catch(e){}}
+document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>{setTab(b.dataset.tab);window.scrollTo({top:0})}));
+setTab(tab);
+/* Écran allumé pendant l'utilisation (si le navigateur l'autorise) */
+let lock=null;
+async function keepAwake(){try{if('wakeLock' in navigator&&!lock&&document.visibilityState==='visible'){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}}catch(e){}}
+document.addEventListener('pointerdown',keepAwake,{passive:true});
+document.addEventListener('visibilitychange',keepAwake);
+
+syncInputs();update();requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>

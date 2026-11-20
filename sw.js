@@ -1,5 +1,5 @@
 // Cache hors ligne du simulateur First 325
-const CACHE = 'first325-v13';
+const CACHE = 'first325-v14';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 // moteur 3D : mis en cache s'il est présent, sans bloquer la mise à jour s'il manque
 const OPTIONAL = ['./three.min.js', './OrbitControls.js'];

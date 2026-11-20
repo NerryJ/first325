@@ -103,7 +103,13 @@ details.panel[open] summary{margin-bottom:10px}
 .view3d canvas{display:block;width:100%!important;height:100%!important;cursor:grab}
 .v3-ui{position:absolute;left:12px;bottom:10px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--ink-2);z-index:2;pointer-events:auto}
 .plan.is3d .legend{display:none}
-@media (max-width:760px){.viewbar{display:none!important}}
+@media (max-width:760px){
+  .viewbar{margin:0}
+  .viewbar .seg button{padding:5px 12px;font-size:13px}
+  .view3d{aspect-ratio:auto;height:31vh;max-height:31vh}
+  .v3-ui{left:8px;bottom:6px;font-size:11px;gap:2px}
+  .v3-ui span{display:none}
+}
 .plan-cta{position:absolute;right:10px;bottom:34px;z-index:3;max-width:min(225px,40%);display:flex;flex-direction:column;gap:7px;padding:10px 12px;
   background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:9px;box-shadow:0 4px 14px color-mix(in srgb,var(--ink) 10%,transparent)}
 .plan-cta .advice{font-size:12.5px;line-height:1.4}
@@ -211,7 +217,7 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
   <header>
     <div>
       <div class="eyebrow">Beneteau First 325 · tribord amures · modèle simplifié</div>
-      <h1>Simulateur de réglage <span>First 325</span> <small class="ver" title="Version de l'application">v13</small></h1>
+      <h1>Simulateur de réglage <span>First 325</span> <small class="ver" title="Version de l'application">v14</small></h1>
     </div>
     <div class="scen" id="scen" role="group" aria-label="Situations de départ"></div>
   </header>
@@ -1386,7 +1392,7 @@ function loop3D(t){
 }
 
 function setView(v){
-  const want3d=v==='3d'&&V3.ok&&window.innerWidth>760;
+  const want3d=v==='3d'&&V3.ok;
   V3.on=want3d;
   $('plan').style.display=want3d?'none':'';$('view3d').hidden=!want3d;
   document.querySelector('.plan').classList.toggle('is3d',want3d);
@@ -1399,7 +1405,6 @@ if(V3.ok){
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
   $('exag3d').addEventListener('change',()=>{if(V3.on)update3D()});
   $('labels3d').addEventListener('change',()=>{if(V3.on)update3D()});
-  window.addEventListener('resize',()=>{if(V3.on&&window.innerWidth<=760)setView('2d')});
   try{if(localStorage.getItem('f325-view')==='3d')setTimeout(()=>setView('3d'),0)}catch(e){}
 }
 

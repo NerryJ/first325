@@ -1,6 +1,6 @@
 // Cache hors ligne du simulateur First 325
-const CACHE = 'first325-v7';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'first325-v12';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './lib/three.min.js', './lib/OrbitControls.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
@@ -14,6 +14,8 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // seuls les fichiers de l'app sont mis en cache ; la vue 3D (bibliothèque externe) demande le réseau
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
       const copy = res.clone();

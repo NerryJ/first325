@@ -96,7 +96,15 @@ details.panel[open] summary{margin-bottom:10px}
 .plan .legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-2)}
 .plan .legend b{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
 .plan .tag{position:absolute;left:12px;top:10px;max-width:45%;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
-.plan-cta{position:absolute;right:10px;bottom:34px;max-width:min(225px,40%);display:flex;flex-direction:column;gap:7px;padding:10px 12px;
+.viewbar{display:flex;justify-content:flex-end;margin-bottom:-6px}
+.viewbar .seg{width:auto}
+.viewbar .seg button{flex:0 0 auto;padding:6px 14px}
+.view3d{position:relative;width:100%;aspect-ratio:1/1;max-height:640px}
+.view3d canvas{display:block;width:100%!important;height:100%!important;cursor:grab}
+.v3-ui{position:absolute;left:12px;bottom:10px;display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--ink-2);z-index:2;pointer-events:auto}
+.plan.is3d .legend{display:none}
+@media (max-width:760px){.viewbar{display:none!important}}
+.plan-cta{position:absolute;right:10px;bottom:34px;z-index:3;max-width:min(225px,40%);display:flex;flex-direction:column;gap:7px;padding:10px 12px;
   background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:9px;box-shadow:0 4px 14px color-mix(in srgb,var(--ink) 10%,transparent)}
 .plan-cta .advice{font-size:12.5px;line-height:1.4}
 .plan-cta .advice .k{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
@@ -145,7 +153,10 @@ details.panel[open] summary{margin-bottom:10px}
 footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
 @media (prefers-reduced-motion:reduce){.meter i{transition:none}}
 .tabbar{display:none}
-@media (min-width:1181px){.center{position:sticky;top:12px}}
+@media (min-width:1181px){.center{position:sticky;top:12px}
+  /* la colonne centrale reste visible en entier : on limite la hauteur de la vue à l'écran */
+  .plan svg{max-height:calc(100vh - 230px)}
+  .view3d{max-height:calc(100vh - 230px);aspect-ratio:auto;height:calc(100vh - 230px)}}
 @media (pointer:coarse){
   input[type=range]{height:36px}
   input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px}
@@ -200,7 +211,7 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
   <header>
     <div>
       <div class="eyebrow">Beneteau First 325 · tribord amures · modèle simplifié</div>
-      <h1>Simulateur de réglage <span>First 325</span> <small class="ver" title="Version de l'application">v7</small></h1>
+      <h1>Simulateur de réglage <span>First 325</span> <small class="ver" title="Version de l'application">v12</small></h1>
     </div>
     <div class="scen" id="scen" role="group" aria-label="Situations de départ"></div>
   </header>
@@ -341,8 +352,12 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
           <div class="meter" aria-hidden="true"><i id="i-heelm"></i></div>
           <div class="meter-scale"><span>0</span><span>10</span><span>20</span><span>30</span><span>40°</span></div></div>
       </div>
+      <div class="viewbar" id="viewbar" hidden><div class="seg" role="group" aria-label="Vue"><button data-view="2d" type="button">Plan 2D</button><button data-view="3d" type="button">Vue 3D</button></div></div>
       <div class="plan">
         <span class="tag" id="plan-tag"></span>
+        <div class="view3d" id="view3d" hidden>
+          <div class="v3-ui"><label class="toggle"><input type="checkbox" id="labels3d" checked> Noms des réglages</label><label class="toggle"><input type="checkbox" id="exag3d"> Formes exagérées (creux et vrillage ×2)</label><span>Glisser pour tourner · molette pour zoomer</span></div>
+        </div>
         <svg id="plan" viewBox="0 0 560 560" role="img" aria-label="Vue de dessus du bateau, des voiles et du vent">
           <g id="waves" stroke="var(--sea)" fill="none" stroke-linecap="round" stroke-dasharray="46 16"></g>
           <g id="particles" stroke="var(--sea)" stroke-width="1.4" stroke-linecap="round" opacity=".38"></g>
@@ -421,6 +436,8 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
   <footer>Modèle pédagogique. Valeurs estimées, sans source publiée : la polaire du First 325 (aucune polaire officielle trouvée), les limites de vent du code 0, des spis et du génois roulé, et l'effet chiffré de la mer. À remplacer par ta polaire ORC et les limites données par ton voilier si tu les as. Les règles de réglage (penons, creux, ris, trinquette, spis, pilote) suivent les guides des voileries et de la presse nautique. Surfaces de voiles modifiables dans « Ma garde-robe ». Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
 </div>
 
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
 <script>
 (function(){
 const D2R=Math.PI/180, clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -841,6 +858,7 @@ function update(){
   $('plan-tag').textContent+=' · mer '+fr1(S.hs,1)+' m / '+fr1(S.tp,S.tp%1?1:0)+' s';
 
   renderHeadsail(); renderMain(); renderCoach(); scheduleBest();
+  if(V3.on)update3D();
   save();
 }
 function fig(k,v,t){return '<div class="fig"><span class="k">'+k+'</span><span class="v">'+v+'</span><span class="t">'+t+'</span></div>'}
@@ -1058,6 +1076,332 @@ function renderAdvice(){
 let recPlan=null;
 $('opt2').addEventListener('click',()=>{S=optimize(S);syncInputs();update()});
 $('apply-advice').addEventListener('click',()=>{if(!recPlan)return;S=optimize(Object.assign({},recPlan));syncInputs();update()});
+
+/* ---------- Vue 3D (ordinateur, nécessite le réseau) ----------
+   Repère en mètres : x vers tribord, y vers le haut, z vers l'arrière. Étrave en z = −4,95, mât en z = −1,2. */
+const V3={on:false,ok:typeof THREE!=='undefined'&&!!THREE.OrbitControls};
+let T3=null;
+const camb=(x,p)=>x<p?(2*p*x-x*x)/(p*p):((1-2*p)+2*p*x-x*x)/((1-p)*(1-p));
+function cssCol(n){return new THREE.Color((getComputedStyle(document.documentElement).getPropertyValue(n)||'#888888').trim()||'#888888')}
+// couleurs relevées sur les photos du bateau (Le Ruby)
+const C3={white:null,uv:null,batten:null,green:null};
+function c3init(){C3.white=new THREE.Color('#f6f7f7');C3.uv=new THREE.Color('#7a8287');C3.batten=new THREE.Color('#cdd2d5');C3.green=new THREE.Color('#2a9d4a')}
+function sailMesh(nu,nv,opacity){
+  const g=new THREE.BufferGeometry(), idx=[], n=(nu+1)*(nv+1);
+  for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=j*(nu+1)+i,b=a+1,c=a+nu+1,d=c+1;idx.push(a,c,b,b,c,d)}
+  g.setIndex(idx);g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));
+  g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3).fill(1),3));
+  const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity,shininess:25}));
+  m.userData={nu,nv,paint:''};return m;
+}
+function setSail(m,f){const {nu,nv}=m.userData,p=m.geometry.attributes.position.array;let k=0;
+  for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const q=f(i/nu,j/nv);p[k++]=q[0];p[k++]=q[1];p[k++]=q[2]}
+  m.geometry.attributes.position.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingSphere()}
+function paintSail(m,key,fn){if(m.userData.paint===key)return;m.userData.paint=key;const {nu,nv}=m.userData,c=m.geometry.attributes.color.array;let k=0;
+  for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const col=fn(i/nu,j/nv);c[k++]=col.r;c[k++]=col.g;c[k++]=col.b}
+  m.geometry.attributes.color.needsUpdate=true}
+function line3(color){const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);return new THREE.Line(g,new THREE.LineBasicMaterial({color}))}
+function setLine3(l,a,b){const p=l.geometry.attributes.position.array;p.set([a[0],a[1],a[2],b[0],b[1],b[2]]);l.geometry.attributes.position.needsUpdate=true;l.geometry.computeBoundingSphere()}
+function poly3(pts,color){return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(...p))),new THREE.LineBasicMaterial({color}))}
+function cyl(r,h,color){return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,12),new THREE.MeshPhongMaterial({color,shininess:60}))}
+// cordage ou tube : cylindre fin tendu entre deux points (repère du bateau)
+function rod(r,color){return new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,8),new THREE.MeshPhongMaterial({color,shininess:60}))}
+function setRod(m,a,b){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),L=d.length()||1e-3;
+  m.position.copy(A.add(B).multiplyScalar(.5));m.scale.set(1,L,1);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())}
+function rodAB(r,color,a,b){const m=rod(r,color);setRod(m,a,b);return m}
+function box3(w,h,d,color){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshPhongMaterial({color}))}
+// étiquette texte toujours face à la caméra
+function label3(text){
+  const c=document.createElement('canvas');c.width=320;c.height=72;const g=c.getContext('2d');
+  g.fillStyle='rgba(19,41,59,.86)';g.beginPath();if(g.roundRect)g.roundRect(4,8,312,56,14);else g.rect(4,8,312,56);g.fill();
+  g.fillStyle='#fff';g.font='600 30px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,37);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false,transparent:true}));
+  s.scale.set(3.1,.7,1);s.renderOrder=10;return s;
+}
+// géométrie extrudée remise dans le repère du bateau
+function remap(geo,fn){const p=geo.attributes.position;for(let i=0;i<p.count;i++){const r=fn(p.getX(i),p.getY(i),p.getZ(i));p.setXYZ(i,r[0],r[1],r[2])}p.needsUpdate=true;geo.computeVertexNormals();return geo}
+// appendice (quille, safran) : profil vu de côté (z, y), épaisseur en x
+function foil(pts,thick,color){const sh=new THREE.Shape();sh.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(p=>sh.lineTo(p[0],p[1]));sh.closePath();
+  const g=new THREE.ExtrudeGeometry(sh,{depth:thick,bevelEnabled:true,bevelThickness:thick*.35,bevelSize:.035,bevelSegments:2});
+  remap(g,(a,b,c)=>[c-thick/2,b,a]);return new THREE.Mesh(g,new THREE.MeshPhongMaterial({color,shininess:40}))}
+
+/* Coque : sections en super-ellipse le long de la longueur (s = 0 étrave, 1 tableau) */
+const HB=[[0,0],[.05,.38],[.15,.88],[.3,1.36],[.5,1.68],[.65,1.7],[.8,1.6],[.9,1.5],[1,1.4]],
+      HS=[[0,1.42],[.5,1.06],[1,1.16]], HK=[[0,.35],[.06,-.15],[.25,-.48],[.55,-.56],[.8,-.38],[1,-.02]], ZB=-4.95, ZS=4.95;
+const sOf=z=>clamp((z-ZB)/(ZS-ZB),0,1), sheerY=z=>interp(HS,sOf(z)), beamAt=z=>interp(HB,sOf(z));
+function hullPt(s,ph,side){const B=interp(HB,s),ys=interp(HS,s),yb=interp(HK,s),e=2/2.6,c=Math.max(0,Math.cos(ph)),sn=Math.max(0,Math.sin(ph));
+  return [side*B*Math.pow(c,e), ys-(ys-yb)*Math.pow(sn,e), ZB+(ZS-ZB)*s]}
+// décoration des bordés d'après les photos : bandes orange et gris foncé, liston, œuvres vives grises, « FIRST 325 »
+function hullTexture(bowRight){
+  const W=2048,H=256,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const X=u=>bowRight?W*(1-u):W*u, Y=y=>H*(1-(y+.6)/2.1);
+  g.fillStyle='#eef1f2';g.fillRect(0,0,W,H);
+  g.fillStyle='#9aa3a8';g.fillRect(0,Y(.06),W,H);
+  g.fillStyle='#4a5258';g.fillRect(0,Y(.3),W,Y(.12)-Y(.3));
+  g.fillStyle='#dfe3e5';g.fillRect(0,Y(.12),W,Y(.06)-Y(.12));
+  g.fillStyle='#4a5258';g.fillRect(0,Y(1.5),W,Y(1.4)-Y(1.5));
+  const cres=(u0,y0,u1,y1,bul,th,col)=>{const um=(u0+u1)/2,ym=(y0+y1)/2;g.fillStyle=col;g.beginPath();
+    g.moveTo(X(u0),Y(y0));g.quadraticCurveTo(X(um),Y(ym+bul),X(u1),Y(y1));g.quadraticCurveTo(X(um),Y(ym+bul-th),X(u0),Y(y0));g.closePath();g.fill()};
+  cres(.02,1.3,.40,.5,.32,.22,'#e8571e');
+  cres(.22,1.15,.52,.55,.25,.12,'#4a5258');
+  cres(.52,1.12,.86,.55,.28,.18,'#e8571e');
+  cres(.66,1.1,.97,.62,.2,.1,'#4a5258');
+  g.fillStyle='#4a5258';g.font='italic 700 54px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';
+  g.fillText('FIRST 325',X(.8),Y(.9));
+  const t=new THREE.CanvasTexture(cv);t.anisotropy=4;return t;
+}
+function transomTexture(){const cv=document.createElement('canvas');cv.width=512;cv.height=256;const g=cv.getContext('2d');
+  g.fillStyle='#eef1f2';g.fillRect(0,0,512,256);g.fillStyle='#4a5258';g.fillRect(0,232,512,24);g.fillStyle='#e8571e';g.textAlign='center';g.textBaseline='middle';
+  g.font='700 66px system-ui,sans-serif';g.fillText('LE RUBY',256,92);g.font='700 50px system-ui,sans-serif';g.fillText('LS',256,165);
+  return new THREE.CanvasTexture(cv)}
+function stripeTexture(){const cv=document.createElement('canvas');cv.width=8;cv.height=64;const g=cv.getContext('2d');
+  g.fillStyle='#16191b';g.fillRect(0,0,8,64);g.fillStyle='#f2f2f2';g.fillRect(0,0,8,22);
+  const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,7);return t}
+
+function buildBoat(boat){
+  const NS=48,NP=14, ink=cssCol('--ink'), gray=new THREE.Color('#8a9196'), silver='#c5cacd', teal='#22b19b';
+  // bordés tribord et bâbord (texture lisible des deux côtés)
+  for(const side of [1,-1]){
+    const pos=[],uv=[],idx=[];
+    for(let i=0;i<=NS;i++){const s=i/NS;for(let j=0;j<=NP;j++){const p=hullPt(s,j/NP*Math.PI/2,side);pos.push(...p);uv.push(side>0?1-s:s,(p[1]+.6)/2.1)}}
+    for(let i=0;i<NS;i++)for(let j=0;j<NP;j++){const a=i*(NP+1)+j,b=a+1,c=a+NP+1,d=c+1;idx.push(a,c,b,b,c,d)}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+    boat.add(new THREE.Mesh(g,new THREE.MeshPhongMaterial({map:hullTexture(side>0),side:THREE.DoubleSide,shininess:45})));
+  }
+  // pont
+  const dp=[],di=[];for(let i=0;i<=NS;i++){const s=i/NS;dp.push(...hullPt(s,0,1),...hullPt(s,0,-1))}
+  for(let i=0;i<NS;i++){const a=i*2;di.push(a,a+2,a+1,a+1,a+2,a+3)}
+  const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.Float32BufferAttribute(dp,3));dg.setIndex(di);dg.computeVertexNormals();
+  boat.add(new THREE.Mesh(dg,new THREE.MeshPhongMaterial({color:'#f3f4f4',side:THREE.DoubleSide})));
+  // tableau arrière avec le nom
+  const sh=new THREE.Shape();for(let j=0;j<=NP;j++){const p=hullPt(1,j/NP*Math.PI/2,1);j?sh.lineTo(p[0],p[1]):sh.moveTo(p[0],p[1])}
+  for(let j=NP;j>=0;j--){const p=hullPt(1,j/NP*Math.PI/2,-1);sh.lineTo(p[0],p[1])}
+  const tg=new THREE.ShapeGeometry(sh),ysT=interp(HS,1),ybT=interp(HK,1),uvA=tg.attributes.uv,pA=tg.attributes.position;
+  for(let i=0;i<pA.count;i++)uvA.setXY(i,(pA.getX(i)+1.45)/2.9,(pA.getY(i)-ybT)/(ysT-ybT));
+  const tm=new THREE.Mesh(tg,new THREE.MeshPhongMaterial({map:transomTexture(),side:THREE.DoubleSide}));tm.position.z=ZS+.003;boat.add(tm);
+  // quille et safran turquoise
+  boat.add(foil([[-.45,-.45],[.95,-.45],[.82,-1.95],[.05,-1.95]],.2,teal));
+  boat.add(foil([[3.95,-.2],[4.55,-.2],[4.45,-1.35],[4.12,-1.35]],.1,teal));
+  // rouf avec hublots, capote grise
+  const cr=new THREE.Shape([[-.82,-2.75],[.82,-2.75],[1.08,-1.3],[1.1,.85],[-1.1,.85],[-1.08,-1.3]].map(p=>new THREE.Vector2(...p)));
+  const cg=new THREE.ExtrudeGeometry(cr,{depth:.4,bevelEnabled:true,bevelThickness:.06,bevelSize:.06,bevelSegments:3});
+  remap(cg,(a,b,c)=>[a,1.08+c,b]);boat.add(new THREE.Mesh(cg,new THREE.MeshPhongMaterial({color:'#f1f2f2',shininess:50})));
+  for(const sd of [1,-1]){const w=box3(.03,.11,1.5,'#2f363b');w.position.set(sd*1.1,1.32,-.55);w.rotation.y=sd*.02;boat.add(w)}
+  const hood=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,1.9,18,1,true,0,Math.PI),new THREE.MeshPhongMaterial({color:'#8d9498',side:THREE.DoubleSide}));
+  hood.rotation.z=Math.PI/2;hood.scale.set(1,1,.75);hood.position.set(0,1.5,1.05);boat.add(hood);
+  // hiloires du cockpit
+  for(const sd of [1,-1]){const h=box3(.06,.28,2.9,'#eceeef');h.position.set(sd*1.08,1.22,2.65);boat.add(h)}
+  // chandeliers, filières, balcons
+  const st=[-3.9,-2.6,-1.3,0,1.3,2.6,3.9];
+  for(const sd of [1,-1]){
+    const tops=[],mids=[];
+    st.forEach(z=>{const x=sd*(beamAt(z)-.1),y=sheerY(z);boat.add(rodAB(.014,silver,[x,y,z],[x,y+.62,z]));tops.push([x,y+.62,z]);mids.push([x,y+.32,z])});
+    boat.add(poly3([[sd*.3,sheerY(-4.4)+.65,-4.4],...tops,[sd*1.2,sheerY(4.75)+.65,4.75]],gray));
+    boat.add(poly3([[sd*.3,sheerY(-4.4)+.35,-4.4],...mids,[sd*1.2,sheerY(4.75)+.35,4.75]],gray));
+    boat.add(rodAB(.018,silver,[sd*.3,sheerY(-4.4),-4.4],[sd*.3,sheerY(-4.4)+.65,-4.6]));
+    boat.add(rodAB(.018,silver,[sd*1.25,sheerY(4.75),4.7],[sd*1.2,sheerY(4.75)+.65,4.75]));
+  }
+  boat.add(rodAB(.018,silver,[-.3,sheerY(-4.4)+.65,-4.6],[.3,sheerY(-4.4)+.65,-4.6]));
+  boat.add(rodAB(.018,silver,[-1.2,sheerY(4.75)+.65,4.75],[1.2,sheerY(4.75)+.65,4.75]));
+  // mât d'antenne avec radôme (arrière bâbord) et plateforme de bain en teck
+  boat.add(rodAB(.035,silver,[-1.15,sheerY(4.5),4.55],[-1.15,sheerY(4.5)+2.5,4.55]));
+  const dome=cyl(.28,.22,'#f4f5f5');dome.position.set(-1.15,sheerY(4.5)+2.6,4.55);boat.add(dome);
+  const step=box3(.95,.05,.42,'#a9825a');step.position.set(.3,.55,ZS+.24);boat.add(step);
+  boat.add(rodAB(.02,silver,[-.18,.55,ZS+.45],[.78,.55,ZS+.45]));
+  // gréement en tête de mât, un étage de barres de flèche
+  const mast=cyl(.085,12.95,silver);mast.position.set(0,1.1+6.475,-1.2);boat.add(mast);
+  const spr=box3(1.95,.05,.08,silver);spr.position.set(0,7.9,-1.12);boat.add(spr);
+  for(const sd of [1,-1]){
+    boat.add(poly3([[0,14,-1.2],[sd*.97,7.9,-1.1],[sd*1.5,sheerY(-1)+.04,-1]],gray));
+    boat.add(poly3([[0,7.85,-1.2],[sd*1.45,sheerY(-.45)+.04,-.45]],gray));
+    boat.add(poly3([[0,7.85,-1.2],[sd*1.45,sheerY(-1.95)+.04,-1.95]],gray));
+  }
+  return {silver,gray};
+}
+
+function init3D(){
+  c3init();
+  const box=$('view3d'), w=box.clientWidth||600, h=box.clientHeight||600;
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.setSize(w,h);box.insertBefore(renderer.domElement,box.firstChild);
+  const scene=new THREE.Scene(), bg=cssCol('--panel');scene.background=bg;scene.fog=new THREE.Fog(bg,45,95);
+  const cam=new THREE.PerspectiveCamera(40,w/h,.1,300);cam.position.set(14,8,19);
+  const ctl=new THREE.OrbitControls(cam,renderer.domElement);ctl.target.set(-.8,4.6,.8);ctl.enableDamping=true;ctl.maxPolarAngle=Math.PI*.495;ctl.minDistance=4;ctl.maxDistance=50;ctl.update();
+  scene.add(new THREE.HemisphereLight(0xffffff,0x405060,.85));const dl=new THREE.DirectionalLight(0xffffff,.75);dl.position.set(12,22,6);scene.add(dl);
+  // mer
+  const seaGeo=new THREE.PlaneGeometry(90,90,90,90);seaGeo.rotateX(-Math.PI/2);
+  const sea=new THREE.Mesh(seaGeo,new THREE.MeshPhongMaterial({color:cssCol('--sea'),transparent:true,opacity:.55,shininess:70,flatShading:true}));scene.add(sea);
+  // bateau
+  const boat=new THREE.Group();scene.add(boat);
+  const {silver,gray}=buildBoat(boat);
+  const ink=cssCol('--ink'), acc=cssCol('--accent');
+  const boomG=new THREE.Group();boomG.position.set(0,2.45,-1.2);
+  const boom=cyl(.075,3.9,silver);boom.rotation.x=Math.PI/2;boom.position.z=1.95;boomG.add(boom);
+  const bag=box3(.34,.42,3.45,'#868d91');bag.position.set(0,.27,1.85);boomG.add(bag);boat.add(boomG);
+  const forestay=line3(gray);setLine3(forestay,[0,1.4,-4.95],[0,14,-1.2]);boat.add(forestay);
+  const backstay=line3(gray);setLine3(backstay,[0,14,-1.2],[0,1.3,4.9]);boat.add(backstay);
+  const inner=line3(gray);setLine3(inner,[0,1.3,-3.7],[0,10.5,-1.2]);boat.add(inner);
+  const sprit=cyl(.05,.8,silver);sprit.rotation.x=Math.PI/2;sprit.position.set(0,1.38,-5.3);boat.add(sprit);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,3.6,12),new THREE.MeshPhongMaterial({map:stripeTexture()}));boat.add(pole);
+  const furled=rodAB(.09,'#6f777c',[0,1.45,-4.88],[0,13.1,-1.48]);boat.add(furled);
+  const main=sailMesh(16,20,.93), head=sailMesh(16,20,.88);boat.add(main);boat.add(head);
+  // accastillage de réglage : rail et chariot de GV, rail de point de tire (bâbord, côté sous le vent), cordages
+  const DY=1.2;
+  const travTrack=box3(1.9,.05,.1,'#7d858a');travTrack.position.set(0,DY,3.0);boat.add(travTrack);
+  const travCar=box3(.24,.12,.2,acc);boat.add(travCar);
+  const leadTrack=box3(.06,.05,1.7,'#7d858a');leadTrack.position.set(-1.32,sheerY(.25)+.02,.25);boat.add(leadTrack);
+  const leadCar=box3(.12,.12,.24,acc);boat.add(leadCar);
+  const winch=cyl(.12,.18,ink);winch.position.set(-1.15,DY+.25,2.4);boat.add(winch);
+  const mainsheet=rod(.03,acc), vang=rod(.035,gray), sheet1=rod(.025,acc), sheet0=rod(.025,acc), sheet2=rod(.025,acc), guy=rod(.025,cssCol('--stbd')), guy0=rod(.025,cssCol('--stbd'));
+  [mainsheet,vang,sheet1,sheet0,sheet2,guy,guy0].forEach(m=>boat.add(m));
+  const labels={chariot:label3('Chariot de GV'),ecoute:label3('Écoute de GV'),halebas:label3('Hale-bas'),tire:label3('Point de tire'),ecouteAv:label3('Écoute d’avant'),bras:label3('Bras de spi')};
+  Object.values(labels).forEach(l=>boat.add(l));
+  // penons en 3D : 3 paires sur la voile d'avant, 3 penons de chute sur la GV
+  const tt=[0,1,2].map(()=>({ww:ribbon3(new THREE.Color('#12c45a'),1),lw:ribbon3(new THREE.Color('#ff3030'),.85)}));
+  tt.forEach(o=>{boat.add(o.ww);boat.add(o.lw)});
+  const ttM=[0,1,2].map(()=>ribbon3(new THREE.Color('#ffb000'),1));ttM.forEach(m=>boat.add(m));
+  const arrA=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),5,acc.getHex(),1.2,.6);
+  const arrT=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),5,cssCol('--sea').getHex(),1.2,.6);
+  scene.add(arrA);scene.add(arrT);
+  const base=seaGeo.attributes.position.array.slice();
+  T3={renderer,scene,cam,ctl,sea,seaGeo,base,boat,boomG,main,head,inner,sprit,pole,furled,arrA,arrT,raf:0,wave:{A:0,k:0,w:0,px:0,pz:1},
+    travCar,leadCar,leadTrack,winch,mainsheet,vang,sheet1,sheet0,sheet2,guy,guy0,labels,backstay,gray:new THREE.Color(gray),acc,DY,tt,ttM,mainF:null,headF:null,headKind:''};
+  new ResizeObserver(()=>{const W2=box.clientWidth,H2=box.clientHeight;if(!W2||!H2)return;renderer.setSize(W2,H2);cam.aspect=W2/H2;cam.updateProjectionMatrix()}).observe(box);
+}
+
+/* Penons 3D : rubans posés sur la surface de la voile, animés comme dans la vue de profil */
+function ribbon3(color,op){const N=10,g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array((N+1)*6),3));
+  const idx=[];for(let i=0;i<N;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}g.setIndex(idx);
+  // toujours dessinés par-dessus la toile, pour rester lisibles à travers la voile
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,transparent:true,opacity:op,depthTest:false}));m.renderOrder=6;m.userData.N=N;return m}
+function setRibbon(m,P0,len,dirAt,wv){const N=m.userData.N,a=m.geometry.attributes.position.array,p=P0.clone();
+  for(let i=0;i<=N;i++){if(i)p.addScaledVector(dirAt(i/N),len/N);const k=i*6;a[k]=p.x+wv.x;a[k+1]=p.y+wv.y;a[k+2]=p.z+wv.z;a[k+3]=p.x-wv.x;a[k+4]=p.y-wv.y;a[k+5]=p.z-wv.z}
+  m.geometry.attributes.position.needsUpdate=true;m.geometry.computeBoundingSphere()}
+// repère local de la voile en (u, v) : t vers la chute, up le long du guindant, n vers le vent (tribord)
+function frameAt(f,u,v){const V=q=>new THREE.Vector3(q[0],q[1],q[2]),P=V(f(u,v)),back=u>.9;
+  const t=V(f(back?u-.03:u+.03,v)).sub(P).multiplyScalar(back?-1:1).normalize();
+  const up=V(f(u,Math.min(1,v+.03))).sub(P);up.addScaledVector(t,-up.dot(t)).normalize();
+  const n=new THREE.Vector3().crossVectors(t,up).normalize();if(n.x<0)n.negate();return {P,t,up,n}}
+function animTT3D(time){
+  const st=TTS.h, show=T3.headKind!=='spi'&&!!T3.headF;
+  T3.tt.forEach((o,i)=>{o.ww.visible=o.lw.visible=show;if(!show)return;
+    const fr=frameAt(T3.headF,.1,[.78,.47,.2][i]), s=SEED[i], de=st.d[i]+(reduce?0:gust(time,s));
+    const dir=a=>fr.t.clone().multiplyScalar(Math.cos(a)).addScaledVector(fr.up,-Math.sin(a));
+    const wob=(f,sp,amp)=>Math.sin(f*6-time*sp+s)*amp*f, wv=fr.up.clone().multiplyScalar(.05);
+    let hw,hl;
+    if(st.blank){hw=f=>1.3+.25*f;hl=f=>1.4+.25*f}
+    else{const w=clamp((-de-1)/7,0,1.4),l=clamp((de-2)/7,0,1.4);
+      hw=f=>-w*1.25+wob(f,9+w*12,.12+w*.55)+(w>1?Math.sin(time*21+s*3)*.6*f:0);
+      hl=f=>l*(.9+1.7*f)+wob(f,9-l*5,.1+.25*l)+.04}
+    setRibbon(o.ww,fr.P.clone().addScaledVector(fr.n,.04),.9,f=>dir(hw(f)),wv);
+    setRibbon(o.lw,fr.P.clone().addScaledVector(fr.n,-.04),.9,f=>dir(hl(f)),wv);
+  });
+  if(!T3.mainF)return;
+  T3.ttM.forEach((m,i)=>{
+    const fr=frameAt(T3.mainF,.995,[.8,.55,.3][i]), s=SEED[i+3], hid=clamp(TTS.m.hid[i]+(reduce?0:gust(time,s)*.14),0,1), k=hid*hid*(3-2*hid);
+    const dir=a=>fr.t.clone().multiplyScalar(Math.cos(a)).addScaledVector(fr.up,-Math.sin(a)).addScaledVector(fr.n,-.6*k).normalize();
+    setRibbon(m,fr.P.clone().addScaledVector(fr.n,-.03*k),.75,f=>dir(.2*(1-k)+(Math.PI*.75+.6*f)*k+Math.sin(f*6-time*(9-k*6)+s)*(.12+.1*k)*f),fr.up.clone().multiplyScalar(.045));
+    m.material.opacity=1-.4*k;
+  });
+}
+
+function update3D(){
+  if(!T3)return;
+  const ex=$('exag3d').checked?2:1, D=D2R;
+  // GV : pied sur la bôme, têtière abaissée par les ris
+  const headY=13.6-[0,1.2,2.4,3.4][S.ris], boomY=2.95; // bordure au-dessus du lazy-bag
+  T3.boomG.rotation.y=-R.boom*D;
+  T3.mainF=(u,v)=>{const y=boomY+(headY-boomY)*v, E=3.75*(1-v)+.35*v, th=(R.boom+R.twM*v*ex)*D, c=camb(u,R.draftM/100)*R.depthM/100*ex*(1-.2*v)*E;
+    return [-Math.sin(th)*u*E-Math.cos(th)*c, y, -1.2+Math.cos(th)*u*E-Math.sin(th)*c]};
+  setSail(T3.main,T3.mainF);
+  paintSail(T3.main,'main',(u,v)=>[.2,.4,.6,.8].some(x=>Math.abs(v-x)<.013)&&u>.04?C3.batten:C3.white);
+  // voile d'avant
+  const hs=R.hs, k=S.av, spi=R.sail.kind==='spi', fr=k==='genois'?S.enrouleur/100:1;
+  let T,Hd;
+  if(k==='genois'){T=[0,1.25,-4.9];Hd=[0,1.25+12.5*fr,-4.9+3.7*fr]}
+  else if(k==='trinq'){const r=S.risT?.78:1;T=[0,1.3,-3.7];Hd=[0,1.3+9.2*r,-3.7+2.5*r]}
+  else if(k==='code0'||k==='asym'){T=[0,1.3,-5.7];Hd=[0,14,-1.2]}
+  else{const p=S.tangon*D, py=2.1+S.hautTangon/100*1.8;T=[3.6*Math.sin(p),py,-1.2-3.6*Math.cos(p)];Hd=[0,14,-1.2];
+    const base=new THREE.Vector3(0,2.1,-1.2), tip=new THREE.Vector3(T[0],py,T[2]);
+    T3.pole.position.copy(base.clone().add(tip).multiplyScalar(.5));
+    T3.pole.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tip.clone().sub(base).normalize());}
+  T3.pole.visible=k==='sym';T3.sprit.visible=k==='code0'||k==='asym';T3.inner.visible=k==='trinq';
+  const LPm=hs.LP/44, dep=hs.depth/100*(spi?1:ex), tw=hs.tw*(spi?1:ex);
+  T3.headF=(u,v)=>{const lx=T[0]+(Hd[0]-T[0])*v, ly=T[1]+(Hd[1]-T[1])*v, lz=T[2]+(Hd[2]-T[2])*v-(spi?1.6*Math.sin(Math.PI*v):0);
+    const E=spi?LPm*(1-Math.pow(v,1.8))+.2:LPm*(1-v)+.12, th=(hs.ang+tw*v)*D, c=camb(u,spi?.5:R.draftH/100)*dep*E;
+    return [lx-Math.sin(th)*u*E-Math.cos(th)*c, ly, lz+Math.cos(th)*u*E-Math.sin(th)*c]};
+  setSail(T3.head,T3.headF);T3.headKind=R.sail.kind;
+  // couleurs d'après les photos : génois à bande anti-UV grise, spi sym vert à tête blanche, code 0 et spi asy bordés de gris
+  paintSail(T3.head,k,(u,v)=>k==='sym'?(v>.78?C3.white:C3.green)
+    :k==='genois'?((u>.93||v<.05)?C3.uv:C3.white)
+    :(k==='code0'||k==='asym')?((u>.94||v<.04||u<.03)?C3.uv:C3.white):C3.white);
+  T3.furled.visible=k!=='genois';
+  // point d'écoute de la voile d'avant (dernier point du bas de la surface)
+  const pa=T3.head.geometry.attributes.position.array, nu=T3.head.userData.nu, cl=[pa[nu*3],pa[nu*3+1],pa[nu*3+2]];
+  const DY=T3.DY, jib=k==='genois'||k==='trinq', LB=T3.labels;
+  // GV : chariot sur le rail, écoute de la bôme au chariot, hale-bas du pied de mât à la bôme
+  const bt=R.boom*D, bAt=d=>[-Math.sin(bt)*d,2.45,-1.2+Math.cos(bt)*d];
+  const carX=-.8*S.chariot/100;T3.travCar.position.set(carX,DY+.05,3.0);
+  setRod(T3.mainsheet,bAt(3.75),[carX,DY+.1,3.0]);
+  setRod(T3.vang,[0,DY+.15,-1.05],bAt(1.0));
+  const vt=S.halebas/100;T3.vang.material.color.copy(T3.gray).lerp(T3.acc,vt);T3.vang.scale.x=T3.vang.scale.z=.7+vt*.9;
+  T3.backstay.material.color.copy(T3.gray).lerp(T3.acc,S.pataras/100);
+  // voile d'avant : point de tire sur le rail bâbord, puis renvoi au winch ; spis et code 0 tirés vers l'arrière
+  T3.leadCar.visible=jib;
+  // les écoutes vont directement du point d'écoute au chariot (ou à la poulie arrière), sans passer sous les filières
+  T3.sheet0.visible=false;T3.guy0.visible=false;
+  if(jib){const z=.25+.8*(k==='trinq'?S.pointTireT:S.pointTire)/100,yz=sheerY(z),car=[-1.32,yz+.14,z];T3.leadCar.position.set(-1.32,yz+.08,z);
+    setRod(T3.sheet1,cl,car);setRod(T3.sheet2,car,[-1.15,DY+.3,2.4]);}
+  else{const blk=[-1.22,sheerY(4.6)+.1,4.6];setRod(T3.sheet1,cl,blk);setRod(T3.sheet2,blk,[-1.15,DY+.3,2.4]);}
+  T3.guy.visible=k==='sym';
+  if(k==='sym')setRod(T3.guy,T,[1.22,sheerY(4.6)+.1,4.6]);
+  // étiquettes
+  const show=$('labels3d').checked;Object.values(LB).forEach(l=>l.visible=show);
+  if(show){LB.chariot.position.set(carX+.6,DY+.45,4.3);LB.ecoute.position.set(...bAt(3.6)).add(new THREE.Vector3(0,1.6,0));
+    LB.halebas.position.set(.9,DY+.9,-1.6);
+    LB.tire.visible=jib;if(jib)LB.tire.position.copy(T3.leadCar.position).add(new THREE.Vector3(-1.9,.1,.7));
+    LB.ecouteAv.position.set(cl[0]-.4,cl[1]+1.3,cl[2]-.4);
+    LB.bras.visible=k==='sym';if(k==='sym')LB.bras.position.set((T[0]+1.25)/2+.3,(T[1]+DY)/2+.6,(T[2]+4.7)/2);}
+  // vents : flèches vers le bateau, en haut du mât
+  const put=(arr,a,y,len)=>{const s=new THREE.Vector3(Math.sin(a*D),0,-Math.cos(a*D));arr.position.set(s.x*9,y,s.z*9);arr.setDirection(s.clone().negate());arr.setLength(len,1.2,.6)};
+  put(T3.arrT,S.twa,16.5,Math.max(2,S.tws/3));put(T3.arrA,R.awaShow,15,Math.max(2,R.awsShow/3));
+  // houle
+  const L=1.56*S.tp*S.tp, wv=R.wa*D;
+  T3.wave={A:S.hs/2,k:2*Math.PI/L,w:2*Math.PI/S.tp,px:-Math.sin(wv),pz:Math.cos(wv)};
+  T3.heel=R.heel*D;
+}
+
+function loop3D(t){
+  if(!V3.on||!T3){if(T3)T3.raf=0;return}
+  T3.raf=requestAnimationFrame(loop3D);
+  const time=reduce?0:t/1000, W=T3.wave, p=T3.seaGeo.attributes.position.array, b=T3.base;
+  for(let i=0;i<p.length;i+=3){p[i+1]=W.A*Math.sin(W.k*(W.px*b[i]+W.pz*b[i+2])-W.w*time)}
+  T3.seaGeo.attributes.position.needsUpdate=true;
+  const ph=-W.w*time, sl=W.A*W.k*Math.cos(ph);
+  T3.boat.position.y=W.A*Math.sin(ph)*.7;
+  T3.boat.rotation.x=Math.atan(sl*W.pz)*.5;
+  T3.boat.rotation.z=(T3.heel||0)+Math.atan(sl*W.px)*.35;
+  animTT3D(time);
+  T3.ctl.update();T3.renderer.render(T3.scene,T3.cam);
+}
+
+function setView(v){
+  const want3d=v==='3d'&&V3.ok&&window.innerWidth>760;
+  V3.on=want3d;
+  $('plan').style.display=want3d?'none':'';$('view3d').hidden=!want3d;
+  document.querySelector('.plan').classList.toggle('is3d',want3d);
+  document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===(want3d?'3d':'2d')));
+  if(want3d){if(!T3)init3D();update3D();if(!T3.raf)T3.raf=requestAnimationFrame(loop3D)}
+  try{localStorage.setItem('f325-view',want3d?'3d':'2d')}catch(e){}
+}
+if(V3.ok){
+  $('viewbar').hidden=false;
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+  $('exag3d').addEventListener('change',()=>{if(V3.on)update3D()});
+  $('labels3d').addEventListener('change',()=>{if(V3.on)update3D()});
+  window.addEventListener('resize',()=>{if(V3.on&&window.innerWidth<=760)setView('2d')});
+  try{if(localStorage.getItem('f325-view')==='3d')setTimeout(()=>setView('3d'),0)}catch(e){}
+}
 
 /* Onglets (téléphone) */
 let tab='reglages';

@@ -1,9 +1,11 @@
 // Cache hors ligne du simulateur First 325
-const CACHE = 'first325-v12';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './lib/three.min.js', './lib/OrbitControls.js'];
+const CACHE = 'first325-v13';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+// moteur 3D : mis en cache s'il est présent, sans bloquer la mise à jour s'il manque
+const OPTIONAL = ['./three.min.js', './OrbitControls.js'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES).then(() => Promise.all(OPTIONAL.map(f => c.add(f).catch(() => {}))))));
   self.skipWaiting();
 });
 

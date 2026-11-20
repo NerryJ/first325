@@ -394,7 +394,7 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
       <div class="panel p-penons">
         <h2>Grand-voile <span id="m-score" class="eyebrow"></span></h2>
         <svg class="ttview" id="m-tt" viewBox="0 0 300 232" role="img" aria-label="Penons de chute de la grand-voile"></svg>
-        <p class="tt-legend">Un penon au bout de chaque latte. Il file vers l'arrière quand l'air sort bien de la chute, et se cache derrière la voile quand la chute est trop fermée. En haut, l'idéal est un penon qui file à peu près la moitié du temps.</p>
+        <p class="tt-legend">Un penon au bout de chaque latte. Il file vers l'arrière quand l'air sort bien de la chute, et se cache derrière la voile quand la chute est trop fermée. Le penon du haut est le premier à décrocher : au près dans la brise, l'idéal est qu'il file en décrochant juste par moments. Dans le petit temps, il doit filer en permanence.</p>
         <svg class="shape" id="m-shape" viewBox="0 0 290 120" role="img" aria-label="Sections de la grand-voile vues de dessous, formes exagérées"></svg>
         <p class="shape-legend" id="m-legend"></p>
         <div class="verdict" id="m-verdict"></div>
@@ -417,7 +417,7 @@ footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
     <button role="tab" data-tab="coach">Coach</button>
   </nav>
 
-  <footer>Modèle pédagogique : la polaire et les réactions du bateau sont des approximations pour un First 325, pas les polaires officielles. Surfaces de voiles modifiables dans « Ma garde-robe ». Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
+  <footer>Modèle pédagogique. Valeurs estimées, sans source publiée : la polaire du First 325 (aucune polaire officielle trouvée), les limites de vent du code 0, des spis et du génois roulé, et l'effet chiffré de la mer. À remplacer par ta polaire ORC et les limites données par ton voilier si tu les as. Les règles de réglage (penons, creux, ris, trinquette, spis, pilote) suivent les guides des voileries et de la presse nautique. Surfaces de voiles modifiables dans « Ma garde-robe ». Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
 </div>
 
 <script>
@@ -511,9 +511,10 @@ function evaluate(s){
   const idealDepth=Math.min(16,(s.tws<=6?14:s.tws>=20?8:14-(s.tws-6)*6/14)+(awa>60?2.5:0)+seaPow*2.5);
   const dsM=Math.exp(-1*((depthM-idealDepth)/3.5)**2), dsH=kind==='jib'?Math.exp(-1*((hs.depth-idealDepth)/3.5)**2):1;
   // position du creux (% de la corde depuis le guindant)
-  const draftM=clamp(50-10*c+clamp((s.tws-10)*.6,0,8)+s.ris,35,62), idealDraftM=(awa<70?45:48)-seaPow*2;
-  const draftH=kind==='jib'?clamp(38+7*(1-b)+(s.av==='genois'?(1-s.enrouleur/100)*10:0)+clamp((s.tws-12)*.3,0,4),30,56):kind==='code0'?42:50;
-  const idealDraftH=kind==='jib'?38-seaPow*2:draftH;
+  // cibles d'après les voileries : GV vers 40-42 %, génois vers 40-45 % (Practical Sailor, WindCheck)
+  const draftM=clamp(43-10*c+clamp((s.tws-10)*.6,0,8)+s.ris,33,58), idealDraftM=(awa<70?42:45)-seaPow*2;
+  const draftH=kind==='jib'?clamp(39+6*(1-b)+(s.av==='genois'?(1-s.enrouleur/100)*10:0)+clamp((s.tws-12)*.3,0,4),32,58):kind==='code0'?42:50;
+  const idealDraftH=kind==='jib'?42-seaPow*2:draftH;
   const dfM=1/(1+((draftM-idealDraftM)/6)**2), dfH=1/(1+((draftH-idealDraftH)/6)**2);
   const idealTwM=(awa<60?(s.tws<10?7+(10-s.tws)*1.2:s.tws<=14?7:Math.min(18,7+(s.tws-14))):(s.tws<8?12:10))+seaPow*4;
   const idealTwH=kind==='jib'?(awa<60?4+Math.max(0,s.tws-14)*.8+(s.tws<6?2:0):8)+seaPow*3:kind==='code0'?8:hs.tw;
@@ -552,7 +553,7 @@ function evaluate(s){
   const bs=raw<=pol?raw:pol+(limit-pol)*(1-Math.exp(-(raw-pol)/Math.max(.01,limit-pol)));
   const bx=s.tws*Math.cos(ra)+bs;
   // charge du pilote automatique (0 à 100) : barre, gîte, vagues, spi, surtoile
-  const pl={helm:Math.max(0,helm-3)*7, heel:Math.max(0,heel-18)*3,
+  const pl={helm:Math.max(0,helm-5)*7+(awa<120?Math.max(0,2-helm)*4:0), heel:Math.max(0,heel-18)*3,
     sea:s.hs*(wAbs>110&&wAbs<165?13:wAbs>=165?9:wAbs>=65?6:4)*(1+clamp((s.tws-15)/20,0,1)),
     spi:spi?(s.av==='sym'?18:12)+(s.hs>=1?10:0):0, dead:s.twa>=170?10:0, over:(overload?15:0)+missRis*8};
   const pilotLoad=clamp(pl.helm+pl.heel+pl.sea+pl.spi+pl.dead+pl.over,0,100);
@@ -937,7 +938,9 @@ function renderHeadsail(){
 function renderMain(){
   const lim=[3,6,9], mStates=lim.map(l=>R.twM<R.idealTwM-l?'curl':'stream');
   // 0 = file, 1 = caché derrière la chute ; 0,5 en haut quand le vrillage est juste
-  TTS.m.hid=[0,3,6].map(off=>clamp((R.idealTwM-off-R.twM)/4+.5,0,1));
+  // vrillage juste : le penon du haut file et décroche juste par moments (dans le petit temps, il file toujours)
+  const lightAir=S.tws<8?.25:0;
+  TTS.m.hid=[0,3,6].map(off=>clamp((R.idealTwM-1-off-R.twM)/4+.32-lightAir,0,1));
   const mc=classifyJib(R.dM);
   let txt,c='ok';
   if(mc==='flap'){txt='La GV fasseye au guindant : borde l’écoute ou monte le chariot.';c='bad'}
@@ -1013,13 +1016,15 @@ const loadTxt=v=>v<25?'faible':v<50?'moyenne':v<75?'forte':'très forte';
 function pilotAdvice(){
   const p=R.pl, out=[], wA=Math.abs(R.wa);
   out.push('Charge du pilote : '+loadTxt(R.pilotLoad)+' ('+Math.round(R.pilotLoad)+'/100). Sous pilote, le coach préfère un bateau équilibré à quelques dixièmes de nœud.');
-  if(p.helm>8)out.push('Barre ardente ('+fr1(R.helm,0)+'°) : le pilote force en permanence. Descends le chariot, ouvre la chute de GV ou prends un ris pour revenir vers 2 à 4° de barre.');
+  if(p.helm>8)out.push('Barre ardente ('+fr1(R.helm,0)+'°) : le pilote force en permanence. Descends le chariot, ouvre la chute de GV ou prends un ris pour revenir vers 3 à 5° de barre.');
+  else if(R.helm<2.5&&R.awa<120)out.push('Barre presque neutre : un peu de barre au vent (3 à 5°) donne au pilote un repère stable.');
   if(p.heel>0)out.push('Gîte '+Math.round(R.heel)+'° : au-delà de 18 à 20°, le safran décroche et le pilote lutte. Réduis la toile plutôt que de compter sur lui.');
   if(R.overload)out.push('Voile d’avant surchargée : sous pilote, réduis-la tout de suite, il ne sent pas les risées venir.');
   else if(R.overM)out.push('Sous pilote, mieux vaut avoir le ris pris avant la risée qu’après.');
   if(p.spi>0)out.push(S.av==='sym'?'Spi sym sous pilote : risque de roulis et d’empannage. Préfère le génois, ou au moins tangon bas et écoute reprise.':'Spi asy sous pilote : surveille les départs au lof. Le code 0 ou le génois fatiguent beaucoup moins le pilote.');
   if(S.hs>=1&&wA>110&&wA<165)out.push('Mer de trois-quarts arrière : chaque vague fait partir le bateau au lof. Réduis la toile à l’avant et choque un peu la GV, ou change de cap pour prendre les vagues plus de l’arrière.');
-  if(p.dead>0)out.push('Vent arrière pile : le pilote risque l’empannage. Vise plutôt 160°, ou installe une retenue de bôme.');
+  if(p.dead>0)out.push('Vent arrière pile : une saute de vent ou une vague peut faire empanner le pilote. Écarte-toi un peu du vent arrière et frappe ta retenue de bôme, au moins au milieu de la bôme.');
+  else if(R.awa>140&&S.tws>=12)out.push('Au portant sous pilote : garde ta retenue de bôme frappée, au moins au milieu de la bôme.');
   if(S.hs>=1.5&&wA<60)out.push('Mer de face : abats de quelques degrés pour que le bateau tape moins, et augmente la sensibilité du pilote.');
   if(out.length===1)out.push('Bateau équilibré : le pilote travaille peu.');
   return out;

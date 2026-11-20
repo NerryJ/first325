@@ -1,5 +1,5 @@
 // Cache hors ligne du simulateur First 325
-const CACHE = 'first325-v1';
+const CACHE = 'first325-v6';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

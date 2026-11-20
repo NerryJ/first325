@@ -13,7 +13,7 @@
 :root{
   --paper:#EBF0F1; --panel:#F8FAFA; --ink:#13293B; --ink-2:#4F6271; --line:#C8D3D8;
   --accent:#D45F27; --sea:#2B6C8C; --stbd:#1D8A4B; --port:#C7313A; --warn:#B9800E;
-  --hull:#DCE4E8; --deck:#C9D5DB; --sail:#FFFFFF; --sail-edge:#13293B;
+  --hull:#DCE4E8; --deck:#C9D5DB; --sail:#FFFFFF; --sail-edge:#13293B; --spi:#E9A23B;
   --f-display:"Barlow Condensed","Roboto Condensed","sans-serif-condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
@@ -21,25 +21,27 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#0C1820; --panel:#13232D; --ink:#DCE6EB; --ink-2:#93A7B3; --line:#263B4A;
   --accent:#F07B43; --sea:#5DA9CE; --stbd:#3DC17B; --port:#F0565E; --warn:#E6B347;
-  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; color-scheme:dark}}
+  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; --spi:#E9A23B; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0C1820; --panel:#13232D; --ink:#DCE6EB; --ink-2:#93A7B3; --line:#263B4A;
   --accent:#F07B43; --sea:#5DA9CE; --stbd:#3DC17B; --port:#F0565E; --warn:#E6B347;
-  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; color-scheme:dark}
+  --hull:#1D3240; --deck:#294353; --sail:#E6EDF0; --sail-edge:#E6EDF0; --spi:#E9A23B; color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+[hidden]{display:none!important}
 .wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
 .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4.2vw,46px);line-height:1;margin:4px 0 0;letter-spacing:.01em;text-wrap:balance}
 h1 span{color:var(--accent)}
-.scen{display:flex;flex-wrap:wrap;gap:6px}
+.scen{display:flex;flex-wrap:wrap;gap:6px;max-width:760px;justify-content:flex-end}
 .chip{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:999px;cursor:pointer}
 .chip:hover{border-color:var(--ink-2)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button,input,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .grid{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:18px;align-items:start}
 @media (max-width:1180px){.grid{grid-template-columns:300px minmax(0,1fr)}.side{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}}
@@ -49,9 +51,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .panel h2{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;color:var(--ink-2);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .controls{display:flex;flex-direction:column;gap:14px}
 .ctl{display:flex;flex-direction:column;gap:3px;padding-block:7px;border-top:1px solid var(--line)}
-.ctl:first-of-type{border-top:0}
+.ctl.first{border-top:0}
 .ctl .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.ctl label{font-weight:600;font-size:13.5px}
+.ctl label,.ctl .lab{font-weight:600;font-size:13.5px}
 .ctl output{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ctl .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2)}
 .ctl .hint{font-size:11.5px;color:var(--ink-2);margin:0}
@@ -61,11 +63,20 @@ input[type=range]::-moz-range-track{height:4px;background:var(--line);border-rad
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);margin-top:-7px;cursor:grab}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);cursor:grab}
 .seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
-.seg button{flex:1;font:500 12.5px var(--f-body);padding:6px 4px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-left:1px solid var(--line)}
+.seg button{flex:1;font:500 12.5px var(--f-body);padding:6px 3px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-left:1px solid var(--line);min-width:0}
 .seg button:first-child{border-left:0}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg.sails button{font-size:12px;line-height:1.15}
 .toggle{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
 .toggle input{accent-color:var(--accent);width:16px;height:16px}
+details.panel summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+details.panel[open] summary{margin-bottom:10px}
+.wr{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center}
+.wr label{font-size:13px}
+.wr label small{color:var(--ink-2);display:block;font-size:11px}
+.wr .num{display:flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.wr input{width:72px;font:500 14px var(--f-mono);padding:6px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);text-align:right}
+.wr-note{font-size:11.5px;color:var(--ink-2);margin:10px 0 0}
 
 .center{display:flex;flex-direction:column;gap:14px;min-width:0}
 .inst{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -83,9 +94,17 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .plan svg{display:block;width:100%;height:auto;max-height:640px}
 .plan .legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-2)}
 .plan .legend b{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
+.plan .tag{position:absolute;left:12px;top:10px;max-width:45%;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.plan-cta{position:absolute;right:10px;bottom:34px;max-width:min(225px,40%);display:flex;flex-direction:column;gap:7px;padding:10px 12px;
+  background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:9px;box-shadow:0 4px 14px color-mix(in srgb,var(--ink) 10%,transparent)}
+.plan-cta .advice{font-size:12.5px;line-height:1.4}
+.plan-cta .advice .k{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+.plan-cta .advice b{color:var(--accent)}
+.plan-cta .cta-row{display:flex;flex-wrap:wrap;gap:6px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .btn{font:600 13.5px var(--f-body);padding:9px 14px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:6px 10px;font-size:12.5px}
 .btn:hover{filter:brightness(1.1)}
 
 .side{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -99,31 +118,40 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .verdict.ok{border-color:var(--stbd);background:color-mix(in srgb,var(--stbd) 10%,transparent)}
 .verdict.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
 .verdict.bad{border-color:var(--port);background:color-mix(in srgb,var(--port) 10%,transparent)}
-.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.shape{display:block;width:100%;max-width:400px;height:auto;margin-top:12px;overflow:visible;border-top:1px solid var(--line);padding-top:6px}
+.shape text{font-family:var(--f-mono);font-size:10px}
+.ttview{display:block;width:100%;max-width:380px;height:auto;margin:0 auto}
+.ttview text{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.tt-steer{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.tt-legend{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:2px 12px}
+.tt-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.tt-legend .full{flex-basis:100%}
+.shape-legend{margin:4px 0 0;font-size:11.5px;line-height:1.5;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:2px 12px}
+.shape-legend b{font-weight:600}
+.shape-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.shape-legend .full{flex-basis:100%}
 .fig{display:flex;flex-direction:column;gap:1px;min-width:0}
 .fig .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);font-family:var(--f-mono)}
 .fig .v{font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums}
 .fig .t{font-size:11px;color:var(--ink-2)}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .coach ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-.coach li{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:8px 10px;border:1px solid var(--line);border-radius:7px}
+.coach li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:7px}
 .coach li.diag{border-style:dashed}
+.coach li.sailpick{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .coach .gain{font-family:var(--f-mono);font-size:12.5px;color:var(--stbd);white-space:nowrap}
 .coach p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
 footer{font-size:11.5px;color:var(--ink-2);max-width:80ch}
 @media (prefers-reduced-motion:reduce){.meter i{transition:none}}
-body{margin:0}
-[hidden]{display:none!important}
-button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .tabbar{display:none}
-.coach .actions{margin-top:12px}
-@media (min-width:761px){.center{position:sticky;top:12px}}
+@media (min-width:1181px){.center{position:sticky;top:12px}}
 @media (pointer:coarse){
   input[type=range]{height:36px}
   input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px}
   input[type=range]::-webkit-slider-thumb{width:28px;height:28px;margin-top:-11px}
   input[type=range]::-moz-range-thumb{width:22px;height:22px}
-  .seg button{padding:11px 4px;font-size:14px}
+  .seg button{padding:11px 3px;font-size:14px}
+  .seg.sails button{font-size:12.5px;padding:10px 2px}
   .chip{padding:9px 13px}
   .toggle input{width:22px;height:22px}
 }
@@ -132,7 +160,7 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
   header{gap:8px}
   header .eyebrow{display:none}
   h1{font-size:24px}
-  .scen{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none;width:calc(100% + 32px)}
+  .scen{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none;width:calc(100% + 32px);max-width:none;justify-content:flex-start}
   .scen::-webkit-scrollbar{display:none}
   .chip{white-space:nowrap}
   .wrap{gap:10px}
@@ -146,7 +174,12 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
   .cell .s,.meter-scale,.plan .legend{display:none}
   .meter{height:5px;margin-top:5px}
   .meter i{height:11px;top:-3px}
-  .plan svg{max-height:33vh}
+  .plan svg{max-height:31vh}
+  .plan-cta{position:static;max-width:none;flex-direction:row;align-items:center;gap:8px;margin:0;padding:7px 10px;border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--panel)}
+  .plan-cta .advice{flex:1;min-width:0;font-size:11.5px;line-height:1.3}
+  .plan-cta .advice .k{display:none}
+  .plan-cta .cta-row{flex-direction:column;flex-wrap:nowrap;gap:4px}
+  .plan-cta .btn.small{padding:6px 9px;font-size:12px;white-space:nowrap}
   .side{display:flex;flex-direction:column}
   .tabbar{display:flex;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--panel);border-top:1px solid var(--line);
     padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
@@ -176,18 +209,85 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
     <section class="controls" aria-label="Réglages">
       <div class="panel">
         <h2>Conditions</h2>
-        <div class="ctl"><div class="top"><label for="tws">Vent réel</label><output id="o-tws"></output></div>
-          <input type="range" id="tws" data-key="tws" min="2" max="35" step="1"></div>
+        <div class="ctl first"><div class="top"><label for="tws">Vent réel</label><output id="o-tws"></output></div>
+          <input type="range" id="tws" data-key="tws" min="2" max="45" step="1"></div>
         <div class="ctl"><div class="top"><label for="twa">Angle au vent réel</label><output id="o-twa"></output></div>
           <input type="range" id="twa" data-key="twa" min="30" max="180" step="1">
           <div class="ends"><span>Près serré</span><span>Travers</span><span>Vent arrière</span></div></div>
+        <div class="ctl"><div class="top"><label for="hs">Hauteur des vagues</label><output id="o-hs"></output></div>
+          <input type="range" id="hs" data-key="hs" min="0" max="4" step="0.1">
+          <div class="ends"><span>Plate</span><span>4 m</span></div></div>
+        <div class="ctl"><div class="top"><label for="tp">Période des vagues</label><output id="o-tp"></output></div>
+          <input type="range" id="tp" data-key="tp" min="2" max="12" step="0.5">
+          <div class="ends"><span>Courte, clapot</span><span>Longue, houle</span></div>
+          <p class="hint">Une mer courte et creuse freine au près : il faut plus de creux, plus de vrillage et ne pas trop serrer le vent.</p></div>
+        <div class="ctl"><div class="top"><label for="merOff">Direction des vagues</label><output id="o-merOff"></output></div>
+          <input type="range" id="merOff" data-key="merOff" min="-90" max="90" step="5">
+          <div class="ends"><span>Plus de l'avant</span><span>Comme le vent</span><span>Plus de l'arrière</span></div>
+          <p class="hint" id="merHint"></p></div>
         <div class="ctl"><label class="toggle"><input type="checkbox" id="rappel"> Équipage au rappel</label></div>
+        <div class="ctl"><label class="toggle"><input type="checkbox" id="pilote"> Sous pilote automatique</label>
+          <p class="hint">Le coach et le réglage optimal cherchent alors le bateau qui fatigue le moins le pilote, quitte à perdre un peu de vitesse.</p></div>
+      </div>
+
+      <div class="panel">
+        <h2>Voile d'avant</h2>
+        <div class="seg sails" id="av" role="group" aria-label="Voile d'avant">
+          <button data-v="genois">Génois</button><button data-v="trinq">Trinq.</button><button data-v="code0">Code 0</button><button data-v="asym">Spi asy</button><button data-v="sym">Spi sym</button>
+        </div>
+        <!-- Génois -->
+        <div class="ctl" data-sail="genois"><div class="top"><label for="enrouleur">Enrouleur</label><output id="o-enrouleur"></output></div>
+          <input type="range" id="enrouleur" data-key="enrouleur" min="50" max="100" step="5">
+          <div class="ends"><span>Roulé</span><span>Déroulé</span></div></div>
+        <div class="ctl" data-sail="genois"><div class="top"><label for="ecouteG">Écoute de génois</label><output id="o-ecouteG"></output></div>
+          <input type="range" id="ecouteG" data-key="ecouteG" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div></div>
+        <div class="ctl" data-sail="genois"><div class="top"><label for="pointTire">Point de tire</label><output id="o-pointTire"></output></div>
+          <input type="range" id="pointTire" data-key="pointTire" min="-100" max="100" step="1">
+          <div class="ends"><span>Avancé</span><span>Reculé</span></div>
+          <p class="hint">Avancé : chute fermée, fond creux. Reculé : le haut s'ouvre.</p></div>
+        <!-- Trinquette -->
+        <div class="ctl" data-sail="trinq"><div class="top"><span class="lab">Ris de trinquette</span><output id="o-risT"></output></div>
+          <div class="seg" id="risT" role="group" aria-label="Ris de trinquette"><button data-v="0">Pleine</button><button data-v="1">1 ris</button></div>
+          <p class="hint">Génois roulé, trinquette envoyée sur l'étai largable.</p></div>
+        <div class="ctl" data-sail="trinq"><div class="top"><label for="ecouteT">Écoute de trinquette</label><output id="o-ecouteT"></output></div>
+          <input type="range" id="ecouteT" data-key="ecouteT" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div></div>
+        <div class="ctl" data-sail="trinq"><div class="top"><label for="pointTireT">Point de tire</label><output id="o-pointTireT"></output></div>
+          <input type="range" id="pointTireT" data-key="pointTireT" min="-100" max="100" step="1">
+          <div class="ends"><span>Avancé</span><span>Reculé</span></div></div>
+        <!-- Code 0 -->
+        <div class="ctl" data-sail="code0"><div class="top"><label for="ecouteC">Écoute de code 0</label><output id="o-ecouteC"></output></div>
+          <input type="range" id="ecouteC" data-key="ecouteC" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div>
+          <p class="hint">Sur emmagasineur : tout déroulé ou tout roulé. Voile plate pour le débridé et le travers par vent faible à modéré.</p></div>
+        <!-- Spi asymétrique -->
+        <div class="ctl" data-sail="asym"><div class="top"><label for="ecouteA">Écoute de spi</label><output id="o-ecouteA"></output></div>
+          <input type="range" id="ecouteA" data-key="ecouteA" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div>
+          <p class="hint">Choquer jusqu'à voir le guindant friser, reborder dès qu'il se replie.</p></div>
+        <div class="ctl" data-sail="asym"><div class="top"><label for="amure">Ligne d'amure</label><output id="o-amure"></output></div>
+          <input type="range" id="amure" data-key="amure" min="0" max="100" step="1">
+          <div class="ends"><span>Courte (bas)</span><span>Longue (haut)</span></div>
+          <p class="hint">Courte au largue serré, longue au grand largue pour faire tourner le spi au vent.</p></div>
+        <!-- Spi symétrique -->
+        <div class="ctl" data-sail="sym"><div class="top"><label for="ecouteS">Écoute de spi</label><output id="o-ecouteS"></output></div>
+          <input type="range" id="ecouteS" data-key="ecouteS" min="0" max="100" step="1">
+          <div class="ends"><span>Bordée</span><span>Choquée</span></div></div>
+        <div class="ctl" data-sail="sym"><div class="top"><label for="tangon">Bras · angle du tangon</label><output id="o-tangon"></output></div>
+          <input type="range" id="tangon" data-key="tangon" min="0" max="90" step="1">
+          <div class="ends"><span>Contre l'étai</span><span>Carré</span></div>
+          <p class="hint">Tangon à peu près perpendiculaire au vent apparent.</p></div>
+        <div class="ctl" data-sail="sym"><div class="top"><label for="hautTangon">Hauteur du tangon</label><output id="o-hautTangon"></output></div>
+          <input type="range" id="hautTangon" data-key="hautTangon" min="0" max="100" step="1">
+          <div class="ends"><span>Bas</span><span>Haut</span></div>
+          <p class="hint">Les deux points d'écoute du spi à la même hauteur.</p></div>
       </div>
 
       <div class="panel">
         <h2>Grand-voile</h2>
-        <div class="ctl"><div class="top"><label>Ris</label><output id="o-ris"></output></div>
-          <div class="seg" id="ris" role="group" aria-label="Ris"><button data-v="0">Haute</button><button data-v="1">1 ris</button><button data-v="2">2 ris</button></div></div>
+        <div class="ctl first"><div class="top"><span class="lab">Ris</span><output id="o-ris"></output></div>
+          <div class="seg" id="ris" role="group" aria-label="Ris de grand-voile"><button data-v="0">Haute</button><button data-v="1">1 ris</button><button data-v="2">2 ris</button><button data-v="3">3 ris</button></div></div>
         <div class="ctl"><div class="top"><label for="ecouteGV">Écoute de GV</label><output id="o-ecouteGV"></output></div>
           <input type="range" id="ecouteGV" data-key="ecouteGV" min="0" max="100" step="1">
           <div class="ends"><span>Bordée</span><span>Choquée</span></div>
@@ -205,22 +305,28 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
           <p class="hint">Ramène le creux vers l'avant quand le vent forcit.</p></div>
         <div class="ctl"><div class="top"><label for="pataras">Pataras</label><output id="o-pataras"></output></div>
           <input type="range" id="pataras" data-key="pataras" min="0" max="100" step="1">
-          <p class="hint">Cintre le mât et raidit l'étai : aplatit les deux voiles.</p></div>
+          <p class="hint">Cintre le mât et raidit l'étai : aplatit GV et génois.</p></div>
       </div>
 
-      <div class="panel">
-        <h2>Génois</h2>
-        <div class="ctl"><div class="top"><label for="enrouleur">Enrouleur</label><output id="o-enrouleur"></output></div>
-          <input type="range" id="enrouleur" data-key="enrouleur" min="50" max="100" step="5">
-          <div class="ends"><span>Roulé</span><span>Déroulé (140 %)</span></div></div>
-        <div class="ctl"><div class="top"><label for="ecouteG">Écoute de génois</label><output id="o-ecouteG"></output></div>
-          <input type="range" id="ecouteG" data-key="ecouteG" min="0" max="100" step="1">
-          <div class="ends"><span>Bordée</span><span>Choquée</span></div></div>
-        <div class="ctl"><div class="top"><label for="pointTire">Point de tire</label><output id="o-pointTire"></output></div>
-          <input type="range" id="pointTire" data-key="pointTire" min="-100" max="100" step="1">
-          <div class="ends"><span>Avancé</span><span>Reculé</span></div>
-          <p class="hint">Avancé : chute fermée, fond creux. Reculé : le haut s'ouvre.</p></div>
-      </div>
+      <details class="panel" id="wardrobe">
+        <summary>Ma garde-robe</summary>
+        <div class="wr">
+          <label for="w-gv">Grand-voile <small>lattée, 3 ris</small></label><span class="num"><input type="number" id="w-gv" data-w="gv" min="10" max="40" step="0.1" inputmode="decimal">m²</span>
+          <label for="w-genois">Génois inter <small>sur enrouleur</small></label><span class="num"><input type="number" id="w-genois" data-w="genois" min="10" max="45" step="0.1" inputmode="decimal">m²</span>
+          <label for="w-trinq">Trinquette <small>à ris, étai largable</small></label><span class="num"><input type="number" id="w-trinq" data-w="trinq" min="8" max="30" step="0.1" inputmode="decimal">m²</span>
+          <label for="w-code0">Code 0 <small>emmagasineur</small></label><span class="num"><input type="number" id="w-code0" data-w="code0" min="20" max="70" step="0.1" inputmode="decimal">m²</span>
+          <label for="w-asym">Spi asymétrique <small>surface estimée</small></label><span class="num"><input type="number" id="w-asym" data-w="asym" min="30" max="110" step="0.1" inputmode="decimal">m²</span>
+          <label for="w-sym">Spi symétrique <small>surface estimée</small></label><span class="num"><input type="number" id="w-sym" data-w="sym" min="30" max="110" step="0.1" inputmode="decimal">m²</span>
+        </div>
+        <p class="wr-note" style="margin-top:14px;font-weight:600;color:var(--ink)">Ma règle de ris (vent réel)</p>
+        <div class="wr" style="margin-top:6px">
+          <label for="w-r1">1<sup>er</sup> ris à partir de</label><span class="num"><input type="number" id="w-r1" data-w="r1" min="5" max="40" step="1" inputmode="numeric">nds</span>
+          <label for="w-r2">2<sup>e</sup> ris à partir de</label><span class="num"><input type="number" id="w-r2" data-w="r2" min="8" max="45" step="1" inputmode="numeric">nds</span>
+          <label for="w-r3">3<sup>e</sup> ris à partir de</label><span class="num"><input type="number" id="w-r3" data-w="r3" min="10" max="50" step="1" inputmode="numeric">nds</span>
+        </div>
+        <p class="wr-note">Les surfaces des deux spis sont des estimations : remplace-les par celles de tes voiles. Elles sont gardées sur cet appareil.</p>
+        <button class="btn ghost small" id="w-reset" type="button">Revenir aux surfaces d'origine</button>
+      </details>
     </section>
 
     <!-- Centre -->
@@ -235,31 +341,40 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
           <div class="meter-scale"><span>0</span><span>10</span><span>20</span><span>30</span><span>40°</span></div></div>
       </div>
       <div class="plan">
+        <span class="tag" id="plan-tag"></span>
         <svg id="plan" viewBox="0 0 560 560" role="img" aria-label="Vue de dessus du bateau, des voiles et du vent">
+          <g id="waves" stroke="var(--sea)" fill="none" stroke-linecap="round" stroke-dasharray="46 16"></g>
           <g id="particles" stroke="var(--sea)" stroke-width="1.4" stroke-linecap="round" opacity=".38"></g>
+          <line id="h-sprit" x1="280" y1="44" x2="280" y2="24" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
           <path d="M280,40 C320,90 358,190 355,300 C353,380 342,440 335,470 L225,470 C218,440 207,380 205,300 C202,190 240,90 280,40 Z" fill="var(--hull)" stroke="var(--ink)" stroke-width="1.6"/>
           <path d="M243,378 L317,378 L320,462 L240,462 Z" fill="var(--deck)" stroke="var(--ink-2)" stroke-width="1"/>
           <line x1="246" y1="392" x2="314" y2="392" stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"/>
           <line x1="222" y1="264" x2="222" y2="336" stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"/>
           <line x1="280" y1="52" x2="280" y2="212" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 4"/>
-          <!-- génois -->
-          <line id="g-sheet" stroke="var(--accent)" stroke-width="1.2"/>
-          <line id="g-sheet2" stroke="var(--accent)" stroke-width="1.2"/>
-          <path id="g-sail" fill="var(--sail)" fill-opacity=".72" stroke="var(--sail-edge)" stroke-width="1.8" stroke-linejoin="round"/>
-          <line id="g-top" stroke="var(--sail-edge)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>
-          <rect id="g-car" width="10" height="7" rx="2" fill="var(--accent)"/>
+          <!-- voile d'avant -->
+          <line id="h-guy" stroke="var(--stbd)" stroke-width="1.2"/>
+          <line id="h-sheet" stroke="var(--accent)" stroke-width="1.2"/>
+          <line id="h-sheet2" stroke="var(--accent)" stroke-width="1.2"/>
+          <path id="h-sail" fill="var(--sail)" fill-opacity=".72" stroke="var(--sail-edge)" stroke-width="1.8" stroke-linejoin="round"/>
+          <line id="h-top" stroke="var(--sail-edge)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>
+          <rect id="h-car" width="10" height="7" rx="2" fill="var(--accent)"/>
           <!-- GV -->
           <line id="m-sheet" stroke="var(--accent)" stroke-width="1.2"/>
           <path id="m-sail" fill="var(--sail)" fill-opacity=".85" stroke="var(--sail-edge)" stroke-width="1.8" stroke-linejoin="round"/>
           <line id="m-boom" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
           <line id="m-top" stroke="var(--sail-edge)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>
           <rect id="m-car" width="10" height="8" rx="2" fill="var(--accent)"/>
+          <line id="h-pole" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
           <circle cx="280" cy="212" r="6" fill="var(--ink)"/>
           <circle cx="280" cy="52" r="3" fill="var(--ink)"/>
           <!-- vents -->
           <g id="w-true"><line stroke="var(--sea)" stroke-width="3"/><path fill="var(--sea)"/><text font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--sea)"></text></g>
           <g id="w-app"><line stroke="var(--accent)" stroke-width="3"/><path fill="var(--accent)"/><text font-family="IBM Plex Mono,monospace" font-size="13" fill="var(--accent)"></text></g>
         </svg>
+        <div class="plan-cta">
+          <div class="advice" id="sail-advice">Je cherche la meilleure voilure…</div>
+          <div class="cta-row"><button class="btn small" id="opt2" type="button">Réglage optimal</button><button class="btn small ghost" id="apply-advice" type="button" hidden>Appliquer le conseil</button></div>
+        </div>
         <div class="legend"><span><b style="background:var(--sea)"></b>Vent réel</span><span><b style="background:var(--accent)"></b>Vent apparent</span><span><b style="background:var(--ink-2);height:1px;border-top:1px dashed var(--ink-2)"></b>Section haute (vrillage)</span></div>
       </div>
     </section>
@@ -267,16 +382,21 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
     <!-- Penons & coach -->
     <section class="side" aria-label="Lecture des voiles">
       <div class="panel p-penons">
-        <h2>Génois <span id="g-score" class="eyebrow"></span></h2>
-        <div class="tt-head"><span></span><span class="g">Au vent · tribord</span><span class="r">Sous le vent · bâbord</span></div>
-        <div class="tt-rows" id="g-tt"></div>
-        <div class="verdict" id="g-verdict"></div>
-        <div class="figs" id="g-figs"></div>
+        <h2><span id="h-name">Génois</span> <span id="h-score" class="eyebrow"></span></h2>
+        <svg class="ttview" id="h-tt" viewBox="0 0 300 232" role="img" aria-label="Penons de la voile d'avant, vus depuis le poste de barre"></svg>
+        <div class="tt-steer"><button class="btn ghost small" id="lofer" type="button">◀ Lofer 2°</button><span id="twa-now"></span><button class="btn ghost small" id="abattre" type="button">Abattre 2° ▶</button></div>
+        <p class="tt-legend" id="h-ttleg"></p>
+        <svg class="shape" id="h-shape" viewBox="0 0 290 120" role="img" aria-label="Sections de la voile d'avant vues de dessous, formes exagérées"></svg>
+        <p class="shape-legend" id="h-legend"></p>
+        <div class="verdict" id="h-verdict"></div>
+        <div class="figs" id="h-figs"></div>
       </div>
       <div class="panel p-penons">
         <h2>Grand-voile <span id="m-score" class="eyebrow"></span></h2>
-        <div class="tt-head"><span></span><span>Penons de chute</span><span></span></div>
-        <div class="tt-rows" id="m-tt"></div>
+        <svg class="ttview" id="m-tt" viewBox="0 0 300 232" role="img" aria-label="Penons de chute de la grand-voile"></svg>
+        <p class="tt-legend">Un penon au bout de chaque latte. Il file vers l'arrière quand l'air sort bien de la chute, et se cache derrière la voile quand la chute est trop fermée. En haut, l'idéal est un penon qui file à peu près la moitié du temps.</p>
+        <svg class="shape" id="m-shape" viewBox="0 0 290 120" role="img" aria-label="Sections de la grand-voile vues de dessous, formes exagérées"></svg>
+        <p class="shape-legend" id="m-legend"></p>
         <div class="verdict" id="m-verdict"></div>
         <div class="figs" id="m-figs"></div>
       </div>
@@ -297,127 +417,221 @@ button,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transpa
     <button role="tab" data-tab="coach">Coach</button>
   </nav>
 
-  <footer>Modèle pédagogique : polaire, surfaces (GV ≈ 25 m², génois 140 % ≈ 33 m²) et réactions sont des approximations pour un First 325 et ne remplacent pas les polaires officielles. Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
+  <footer>Modèle pédagogique : la polaire et les réactions du bateau sont des approximations pour un First 325, pas les polaires officielles. Surfaces de voiles modifiables dans « Ma garde-robe ». Le bateau est toujours tribord amures : penons au vent en vert, sous le vent en rouge.</footer>
 </div>
 
 <script>
 (function(){
 const D2R=Math.PI/180, clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const fr1=(n,d=1)=>n.toFixed(d).replace('.',',');
+const $=id=>document.getElementById(id);
+
+/* ---------- Garde-robe ---------- */
+const W0={gv:23.7,genois:28.1,trinq:20,code0:47.3,asym:62,sym:66,r1:15,r2:20,r3:30};
+let W=Object.assign({},W0);
+try{const w=JSON.parse(localStorage.getItem('f325-voiles')||'null');if(w)for(const k in W0)if(+w[k]>0)W[k]=+w[k]}catch(e){}
+const saveW=()=>{try{localStorage.setItem('f325-voiles',JSON.stringify(W))}catch(e){}};
+
+const SAILS={
+  genois:{name:'Génois',kind:'jib',opt:16,lim:Infinity,tack:[280,52],top:182,ecoute:'ecouteG'},
+  trinq:{name:'Trinquette',kind:'jib',opt:16,lim:Infinity,tack:[280,104],top:194,ecoute:'ecouteT'},
+  code0:{name:'Code 0',kind:'code0',opt:15,lim:18,tack:[280,26],top:176,ecoute:'ecouteC'},
+  asym:{name:'Spi asymétrique',kind:'spi',opt:28,lim:22,tack:[280,26],ecoute:'ecouteA'},
+  sym:{name:'Spi symétrique',kind:'spi',opt:28,lim:24,ecoute:'ecouteS'}
+};
+const SAIL_IDS=['genois','trinq','code0','asym','sym'];
+const SAIL_KEYS={genois:['enrouleur','ecouteG','pointTire'],trinq:['risT','ecouteT','pointTireT'],code0:['ecouteC'],asym:['ecouteA','amure'],sym:['ecouteS','tangon','hautTangon']};
+const MAIN_KEYS=['ecouteGV','chariot','halebas','bordure','cunningham','pataras','ris'];
 
 /* ---------- Modèle ---------- */
 const FA=[[30,0],[33,.5],[36,.72],[40,.83],[44,.88],[50,.915],[60,.95],[75,.985],[90,1],[110,1],[125,.97],[140,.91],[155,.83],[170,.76],[180,.73]];
 function interp(t,x){if(x<=t[0][0])return t[0][1];for(let i=1;i<t.length;i++){if(x<=t[i][0]){const[a,b]=t[i-1],[c,d]=t[i];return b+(d-b)*(x-a)/(c-a)}}return t[t.length-1][1]}
+// polaire de référence : GV + génois bien réglés
 function polar(tws,twa){const base=7.6*(1-Math.exp(-tws/6));const surf=1+Math.max(0,(tws-18)/40)*Math.max(0,(twa-100)/80);return base*interp(FA,twa)*surf}
+const MAXB=78, OPTM=15, H=.45, VH=7.0;
+// angle d'arrivée des vagues depuis l'étrave, en degrés (+ tribord, − bâbord)
+function waveAngle(s){let a=s.twa+(s.merOff||0);a=((a+180)%360+360)%360-180;return a}
 
-const MAXB=78, MAXG=70, OPTG=16, OPTM=15, H=.45;
+function headsail(s){
+  const b=s.pataras/100;
+  switch(s.av){
+    case 'genois':{const fr=s.enrouleur/100,car=s.pointTire/100,ang=8+62*Math.pow(s.ecouteG/100,1.5);
+      return {A:W.genois*fr,ang,maxAng:70,tw:clamp(5+7*car,0,20)+Math.max(0,ang-15)*.15+(1-fr)*4,depth:clamp(14-3.5*b-1.5*car+(1-fr)*3,5,18),LP:229*Math.sqrt(W.genois/33)*fr}}
+    case 'trinq':{const A=W.trinq*(s.risT?.72:1),car=s.pointTireT/100,ang=7+48*Math.pow(s.ecouteT/100,1.5);
+      return {A,ang,maxAng:55,tw:clamp(4+7*car,0,18)+Math.max(0,ang-15)*.15,depth:clamp(13-2*b-1.5*car+(s.risT?1:0),5,17),LP:205*Math.sqrt(A/33)}}
+    case 'code0':{const ang=18+57*Math.pow(s.ecouteC/100,1.4);
+      return {A:W.code0,ang,maxAng:75,tw:8+Math.max(0,ang-20)*.15,depth:9,LP:215*Math.sqrt(W.code0/33)}}
+    case 'asym':{const ang=20+75*Math.pow(s.ecouteA/100,1.2);
+      return {A:W.asym,ang,maxAng:95,tw:10,depth:22,LP:250*Math.sqrt(W.asym/62)}}
+    default:{const ang=30+.6*s.tangon+25*Math.pow(s.ecouteS/100,1.2);
+      return {A:W.sym,ang,maxAng:109,tw:8+.12*Math.abs(s.hautTangon-50),depth:22,LP:300*Math.sqrt(W.sym/66)}}
+  }
+}
+
 function evaluate(s){
-  const fr=s.enrouleur/100, A_M=25.5*[1,.78,.6][s.ris], A_G=33*fr;
-  const o=s.bordure/100,b=s.pataras/100,c=s.cunningham/100,v=s.halebas/100,t=s.chariot/100,car=s.pointTire/100;
+  const sail=SAILS[s.av], kind=sail.kind, spi=kind==='spi';
+  const A_M=W.gv*[1,.8,.62,.46][s.ris];
+  const o=s.bordure/100,b=s.pataras/100,c=s.cunningham/100,v=s.halebas/100,t=s.chariot/100;
   const boom=clamp(2+6*t+75*Math.pow(s.ecouteGV/100,1.5),0,MAXB);
   const sheetDown=clamp(1-s.ecouteGV/35,0,1);
   const twM=3+20*(1-Math.max(v*.9,sheetDown))+s.ris;
   const depthM=15.5-4.5*o-3*b-.8*c-1.2*s.ris;
-  const angG=8+62*Math.pow(s.ecouteG/100,1.5);
-  const twG=clamp(5+7*car,0,20)+Math.max(0,angG-15)*.15+(1-fr)*4;
-  const depthG=clamp(14-3.5*b-1.5*car+(1-fr)*3,5,18);
+  const hs=headsail(s), A_H=hs.A;
   const pol=polar(s.tws,s.twa);
-  function core(bs){
-    const a=s.twa*D2R, ax=s.tws*Math.sin(a), ay=s.tws*Math.cos(a)+bs;
-    const aws=Math.hypot(ax,ay), awa=Math.atan2(ax,ay)/D2R;
-    const blanket=awa>145;
-    const dw=5*clamp(A_G/33,0,1)*(awa<90?1:clamp(1-(awa-90)/40,0,1));
-    const aoaG=h=>awa+4*h-angG-twG*h, aoaM=h=>awa-dw+4*h-boom-twM*h;
-    const tgtG=Math.max(OPTG,awa+4*H-MAXG-twG*H), tgtM=Math.max(OPTM,awa-dw+4*H-MAXB-twM*H);
-    const dG=aoaG(H)-tgtG, dM=aoaM(H)-tgtM;
-    const wG=3.5+.25*(depthG-8), wM=3.5+.25*(depthM-8);
-    const sc=(d,w)=>Math.max(.02,d<0?Math.exp(-1*(d/w)**2)*(d<-7?.75:1)+.03:1/(1+(d/(w*1.7))**2));
-    const sG=sc(dG,wG), sM=sc(dM,wM);
-    const idealDepth=Math.min(15.5,(s.tws<=6?14:s.tws>=20?8:14-(s.tws-6)*6/14)+(awa>60?2.5:0));
-    const dsM=Math.exp(-1*((depthM-idealDepth)/3.5)**2), dsG=Math.exp(-1*((depthG-idealDepth)/3.5)**2);
-    const cunIdeal=awa<70?clamp((s.tws-12)/10,0,1):0, cunS=1-.15*Math.abs(c-cunIdeal);
-    const idealTwM=awa<60?(s.tws<10?7+(10-s.tws)*1.2:s.tws<=14?7:Math.min(18,7+(s.tws-14))):(s.tws<8?12:10);
-    const idealTwG=awa<60?4+Math.max(0,s.tws-14)*.8+(s.tws<6?2:0):8;
-    const tsM=1/(1+((twM-idealTwM)/6)**2), tsG=1/(1+((twG-idealTwG)/5)**2);
-    const aoaPow=d=>d<0?clamp(1+d/8,.05,1):1;
-    const gK=blanket?.35:1;
-    const P_heel=A_M*aoaPow(dM)*Math.pow(depthM/12,.7)*(1-(twM-5)/40)+A_G*gK*aoaPow(dG)*Math.pow(depthG/12,.7)*(1-(twG-4)/40);
-    const hc=Math.max(.1,Math.cos(awa*D2R))+.15;
-    const heel=40*(1-Math.exp(-1*(aws*aws*P_heel*hc/1000)/(s.rappel?30.5:26.6)));
-    const P_drive=A_M*sM*Math.sqrt(depthM/12)+A_G*gK*sG*Math.sqrt(depthG/12);
-    const ratio=P_drive/(25.5+33*gK);
-    const e=clamp(.55*(1-(s.tws-5)/13),0,.55);
-    const powerF=Math.min(1.02,Math.pow(ratio,e));
-    const effHeel=heel<=20?1:Math.max(.3,1-((heel-20)/16)**2);
-    const helm=awa>150?1:1.5+Math.max(0,heel-12)*.45+Math.max(0,idealTwM-twM)*.2+(A_G/(A_G+A_M)<.45?1.5:0);
-    const helmPen=helm>10?.9:helm>7?.96:1;
-    const wg=blanket?.08:awa>120?.25:.4;
-    const trimQ=Math.pow(sG,wg)*Math.pow(sM,.4)*Math.pow(dsM*cunS,.1)*Math.pow(dsG,.08)*Math.pow(tsM,.12)*Math.pow(tsG,.08);
-    const bsN=pol*(.45+.55*Math.pow(trimQ,.8))*effHeel*powerF*helmPen;
-    return {bs:bsN,aws,awa,blanket,dw,aoaG,aoaM,tgtG,tgtM,dG,dM,sG,sM,idealDepth,cunIdeal,idealTwM,idealTwG,heel,helm,trimQ,tsM,tsG,dsM,dsG};
-  }
   // aérodynamique évaluée au vent apparent de la vitesse polaire (évite les équilibres bloqués)
-  const r=core(pol), a=s.twa*D2R, ax=s.tws*Math.sin(a), ay=s.tws*Math.cos(a)+r.bs;
-  r.awaShow=Math.atan2(ax,ay)/D2R; r.awsShow=Math.hypot(ax,ay);
-  return Object.assign(r,{boom,twM,depthM,angG,twG,depthG,A_M,A_G,pol,fr});
+  const ra=s.twa*D2R, ax=s.tws*Math.sin(ra), ay=s.tws*Math.cos(ra)+pol;
+  const aws=Math.hypot(ax,ay), awa=Math.atan2(ax,ay)/D2R;
+  // état de la mer : cambrure H / longueur d'onde (L = 1,56·T²)
+  const steep=s.hs/(1.56*s.tp*s.tp);
+  // angle des vagues vu du bateau (0 = de face, 180 = de l'arrière)
+  const wa=waveAngle(s), wAbs=Math.abs(wa), wr=wAbs*D2R;
+  const upw=wAbs<=100?(Math.cos(wr)+.25)/1.25:.12;
+  // remonter trop près des vagues fait taper le bateau
+  const pinch=s.hs*.06*clamp((48-wAbs)/8,0,1)*clamp(steep/.02,.4,1.5);
+  // mer de travers : roulis
+  const roll=s.hs*.025*Math.sin(wr)**2*clamp(steep/.02,.5,1.5);
+  const seaF=1-clamp(s.hs*(.04+2.5*steep)*Math.max(.12,upw)+pinch+roll,0,.5);
+  const seaPow=Math.min(1,s.hs/1.5)*(awa<70&&wAbs<75?1:.4)*clamp(steep/.02,.5,1.4);
+  const jibMask=awa>145?.3:awa>125?.65:1;
+  const hK=s.av==='sym'?1:s.av==='asym'?(awa>160?.35:awa>145?.7:1):jibMask;
+  // plage d'allure propre à chaque voile (guindant du code 0 qui creuse au près, spis peu efficaces au serré)
+  const range=s.av==='code0'?clamp((awa-28)/14,.25,1)*(awa>110?clamp(1-(awa-110)/60,.5,1):1)
+    :s.av==='asym'?clamp((awa-45)/35,.25,1)*clamp(1-(awa-148)/40,.55,1):s.av==='sym'?clamp((awa-60)/40,.25,1)
+    :s.av==='genois'?1-(1-s.enrouleur/100)*.5:1; // génois très roulé : forme dégradée
+  const blanket=hK<=.45;
+  const dw=spi?2:5*clamp(A_H/33,0,1.2)*(awa<90?1:clamp(1-(awa-90)/40,0,1));
+  const aoaH=h=>awa+4*h-hs.ang-hs.tw*h, aoaM=h=>awa-dw+4*h-boom-twM*h;
+  const tgtH=Math.max(sail.opt,awa+4*H-hs.maxAng-hs.tw*H), tgtM=Math.max(OPTM,awa-dw+4*H-MAXB-twM*H);
+  const dH=aoaH(H)-tgtH, dM=aoaM(H)-tgtM;
+  const sc=(d,w,soft)=>d<0?Math.exp(-1*(d/w)**2)*(d<-soft?.6:1)+.03:Math.max(.002,1/(1+(d/(w*1.7))**2));
+  // au portant, une voile décrochée pousse encore par traînée
+  const drag=clamp((awa-90)/60,0,1)*.6;
+  const withDrag=x=>1-(1-Math.min(1,x))*(1-drag)+Math.max(0,x-1);
+  const sH=withDrag(spi?sc(dH,6,5):sc(dH,3.5+.25*(hs.depth-8),7)), sM=withDrag(sc(dM,3.5+.25*(depthM-8),7));
+  const idealDepth=Math.min(16,(s.tws<=6?14:s.tws>=20?8:14-(s.tws-6)*6/14)+(awa>60?2.5:0)+seaPow*2.5);
+  const dsM=Math.exp(-1*((depthM-idealDepth)/3.5)**2), dsH=kind==='jib'?Math.exp(-1*((hs.depth-idealDepth)/3.5)**2):1;
+  // position du creux (% de la corde depuis le guindant)
+  const draftM=clamp(50-10*c+clamp((s.tws-10)*.6,0,8)+s.ris,35,62), idealDraftM=(awa<70?45:48)-seaPow*2;
+  const draftH=kind==='jib'?clamp(38+7*(1-b)+(s.av==='genois'?(1-s.enrouleur/100)*10:0)+clamp((s.tws-12)*.3,0,4),30,56):kind==='code0'?42:50;
+  const idealDraftH=kind==='jib'?38-seaPow*2:draftH;
+  const dfM=1/(1+((draftM-idealDraftM)/6)**2), dfH=1/(1+((draftH-idealDraftH)/6)**2);
+  const idealTwM=(awa<60?(s.tws<10?7+(10-s.tws)*1.2:s.tws<=14?7:Math.min(18,7+(s.tws-14))):(s.tws<8?12:10))+seaPow*4;
+  const idealTwH=kind==='jib'?(awa<60?4+Math.max(0,s.tws-14)*.8+(s.tws<6?2:0):8)+seaPow*3:kind==='code0'?8:hs.tw;
+  const tsM=1/(1+((twM-idealTwM)/6)**2), tsH=kind==='spi'?1:1/(1+((hs.tw-idealTwH)/5)**2);
+  // réglages propres aux spis
+  let cs=1, idealAmure=null, idealPole=null;
+  if(s.av==='asym'){idealAmure=clamp((awa-80)/70,0,1)*100;cs=1/(1+((s.amure-idealAmure)/35)**2)}
+  if(s.av==='sym'){idealPole=clamp(awa-90,0,90);cs=Math.pow(1/(1+((s.tangon-idealPole)/18)**2),.7)*Math.pow(1/(1+((s.hautTangon-50)/35)**2),.3)}
+  // gîte
+  const aoaPow=d=>d<0?clamp(1+d/8,.05,1):1;
+  const sinA=Math.sin(awa*D2R), hc=Math.max(.1,Math.cos(awa*D2R))+.15;
+  // trinquette : centre de poussée plus bas et plus près du mât, donc moins de gîte
+  const hcH=(spi?hc+.3*sinA*(awa<140?1:.4):kind==='code0'?hc+.1*sinA:hc)*(s.av==='trinq'?.85:1);
+  // limite de vent apparent : génois d'autant plus tolérant qu'il est roulé, trinquette faite pour la brise
+  const lim=s.av==='genois'?26+(1-s.enrouleur/100)*24:s.av==='trinq'?(s.risT?55:42):sail.lim;
+  const overload=aws>lim;
+  // GV : ta règle de ris selon le vent réel (seuils réglables dans Ma garde-robe)
+  const reqRis=s.tws>=W.r3?3:s.tws>=W.r2?2:s.tws>=W.r1?1:0, missRis=Math.max(0,reqRis-s.ris), overM=missRis>0;
+  const Pm=A_M*aoaPow(dM)*Math.pow(depthM/12,.7)*(1-(twM-5)/40)*hc*(1+.12*missRis);
+  const Ph=A_H*hK*aoaPow(dH)*Math.pow(Math.min(hs.depth,14)/12,.7)*(1-(hs.tw-4)/40)*hcH*(overload?1.15:1);
+  const heel=40*(1-Math.exp(-(aws*aws*(Pm+Ph)/1000)/(s.rappel?30.5:26.6)));
+  // puissance motrice comparée au plan de voilure de référence (GV + génois)
+  const D=A_M*sM*Math.sqrt(depthM/12)+A_H*hK*range*sH*Math.sqrt(Math.min(hs.depth,16)/12)*Math.sqrt(cs);
+  const ratio=D/(W.gv+W.genois*jibMask);
+  const e=(awa<80?clamp(.55*(1-(s.tws-5)/13),0,.55):clamp(.5*(1-(s.tws-5)/26),.12,.5))+seaPow*.12;
+  let powerF=Math.pow(ratio,e); if(awa<45)powerF=Math.min(powerF,1.03);
+  const effHeel=heel<=20?1:Math.max(.3,1-((heel-20)/16)**2);
+  const helm=awa>150?1:1.5+Math.max(0,heel-12)*.45+Math.max(0,idealTwM-twM)*.2+(A_H/(A_H+A_M)<.4?1.5:0)+(spi&&heel>24?3:0);
+  const helmPen=helm>10?.9:helm>7?.96:1;
+  const wh=spi?.45:blanket?.08:awa>120?.25:.4;
+  const trimQ=Math.pow(sH,wh)*Math.pow(sM,.4)*Math.pow(dsM*dfM,.1)*Math.pow(dsH,.08)*Math.pow(dfH,.05)*Math.pow(tsM,.12)*Math.pow(tsH,.08)*Math.pow(cs,.2);
+  const raw=pol*(.45+.55*Math.pow(trimQ,.8))*effHeel*powerF*helmPen*(overload?clamp(1-(aws-lim)/lim*1.6-.08,.4,1):1)*Math.pow(.8,missRis)*seaF;
+  // vitesse limite de carène (avec du surf au portant dans la brise et la houle)
+  const surfSea=wAbs>110&&s.twa>100&&s.tp>=5?clamp(s.hs*.05*(s.tp/8),0,.12)*clamp((s.tws-8)/8,0,1):0;
+  const limit=Math.max(pol,VH*(1+Math.max(0,(s.tws-14)/25)*(s.twa>110?1:0)+surfSea));
+  const bs=raw<=pol?raw:pol+(limit-pol)*(1-Math.exp(-(raw-pol)/Math.max(.01,limit-pol)));
+  const bx=s.tws*Math.cos(ra)+bs;
+  // charge du pilote automatique (0 à 100) : barre, gîte, vagues, spi, surtoile
+  const pl={helm:Math.max(0,helm-3)*7, heel:Math.max(0,heel-18)*3,
+    sea:s.hs*(wAbs>110&&wAbs<165?13:wAbs>=165?9:wAbs>=65?6:4)*(1+clamp((s.tws-15)/20,0,1)),
+    spi:spi?(s.av==='sym'?18:12)+(s.hs>=1?10:0):0, dead:s.twa>=170?10:0, over:(overload?15:0)+missRis*8};
+  const pilotLoad=clamp(pl.helm+pl.heel+pl.sea+pl.spi+pl.dead+pl.over,0,100);
+  const score=s.pilote?bs*(1-pilotLoad/110):bs;
+  return {bs,pol,aws,awa,awaShow:Math.atan2(ax,bx)/D2R,awsShow:Math.hypot(ax,bx),blanket,overload,heel,helm,trimQ,
+    aoaH,aoaM,tgtH,tgtM,dH,dM,sH,sM,idealDepth,idealTwM,idealTwH,idealAmure,idealPole,cs,
+    seaF,steep,surfSea,wa,lim,reqRis,overM,pilotLoad,pl,score,draftM,draftH,idealDraftM,idealDraftH,
+    boom,twM,depthM,hs,A_M,A_H,sail};
 }
 
 /* ---------- Situations ---------- */
+const BASE={tws:12,twa:42,hs:.5,tp:6,merOff:0,rappel:false,pilote:false,ris:0,ecouteGV:6,chariot:0,halebas:20,bordure:40,cunningham:0,pataras:20,
+  av:'genois',enrouleur:100,ecouteG:10,pointTire:0,risT:0,ecouteT:10,pointTireT:0,ecouteC:30,ecouteA:50,amure:50,ecouteS:40,tangon:45,hautTangon:50};
 const SCEN=[
- {id:'pres12',name:'Près · 12 nds',s:{tws:12,twa:42,rappel:false,ris:0,ecouteGV:6,chariot:0,halebas:10,bordure:30,cunningham:0,pataras:15,enrouleur:100,ecouteG:0,pointTire:-30}},
- {id:'pres20',name:'Près · 20 nds',s:{tws:20,twa:42,rappel:true,ris:0,ecouteGV:5,chariot:10,halebas:20,bordure:30,cunningham:0,pataras:10,enrouleur:100,ecouteG:8,pointTire:0}},
- {id:'petit',name:'Petit temps · 5 nds',s:{tws:5,twa:45,rappel:false,ris:0,ecouteGV:0,chariot:0,halebas:50,bordure:90,cunningham:60,pataras:80,enrouleur:100,ecouteG:4,pointTire:40}},
- {id:'travers',name:'Travers · 14 nds',s:{tws:14,twa:90,rappel:false,ris:0,ecouteGV:12,chariot:0,halebas:20,bordure:60,cunningham:20,pataras:40,enrouleur:100,ecouteG:15,pointTire:0}},
- {id:'largue',name:'Grand largue · 16 nds',s:{tws:16,twa:140,rappel:false,ris:0,ecouteGV:55,chariot:40,halebas:0,bordure:50,cunningham:0,pataras:30,enrouleur:100,ecouteG:55,pointTire:-20}},
- {id:'arriere',name:'Vent arrière · 10 nds',s:{tws:10,twa:172,rappel:false,ris:0,ecouteGV:70,chariot:80,halebas:30,bordure:40,cunningham:0,pataras:20,enrouleur:100,ecouteG:80,pointTire:0}}
+ {id:'pres12',name:'Près · 12 nds',s:{tws:12,twa:42,ecouteGV:6,halebas:10,bordure:30,pataras:15,ecouteG:0,pointTire:-30}},
+ {id:'pres20',name:'Près · 20 nds',s:{tws:20,twa:42,rappel:true,ecouteGV:5,chariot:10,bordure:30,pataras:10,ecouteG:8}},
+ {id:'pres26',name:'Près · 26 nds',s:{tws:26,twa:45,rappel:true,ris:1,ecouteGV:10,chariot:20,halebas:30,bordure:60,cunningham:30,pataras:50,enrouleur:70,ecouteG:12}},
+ {id:'clapot',name:'Près · clapot 1,2 m',s:{tws:14,twa:40,hs:1.2,tp:4,ecouteGV:2,chariot:20,halebas:40,bordure:90,cunningham:40,pataras:80,ecouteG:2,pointTire:-40}},
+ {id:'petit',name:'Petit temps · 5 nds',s:{tws:5,twa:45,hs:.3,tp:5,ecouteGV:0,halebas:50,bordure:90,cunningham:60,pataras:80,ecouteG:4,pointTire:40}},
+ {id:'code0',name:'Débridé · code 0 · 8 nds',s:{tws:8,twa:70,av:'code0',ecouteC:8,ecouteGV:15,chariot:30,halebas:20,bordure:60,pataras:40}},
+ {id:'travers',name:'Travers · 14 nds',s:{tws:14,twa:90,ecouteGV:12,halebas:20,bordure:60,cunningham:20,pataras:40,ecouteG:15}},
+ {id:'asym',name:'Largue · spi asy · 14 nds',s:{tws:14,twa:130,av:'asym',ecouteA:30,amure:15,ecouteGV:40,chariot:40,halebas:0,bordure:50}},
+ {id:'sym',name:'Vent arrière · spi sym · 12 nds',s:{tws:12,twa:168,av:'sym',ecouteS:60,tangon:30,hautTangon:85,ecouteGV:70,chariot:80,halebas:20,bordure:40}}
 ];
+const scenState=sc=>Object.assign({},BASE,sc.s);
 let scenId='pres12';
-let S=Object.assign({},SCEN[0].s);
-try{const saved=JSON.parse(localStorage.getItem('f325-state')||'null');if(saved&&saved.S){S=Object.assign(S,saved.S);scenId=saved.scen||null}}catch(e){}
+let S=scenState(SCEN[0]);
+try{const saved=JSON.parse(localStorage.getItem('f325-state')||'null');if(saved&&saved.S){S=Object.assign({},BASE,saved.S);scenId=saved.scen||null;if(!SAILS[S.av])S.av='genois';S.ris=clamp(S.ris|0,0,3)}}catch(e){}
 const save=()=>{try{localStorage.setItem('f325-state',JSON.stringify({S,scen:scenId}))}catch(e){}};
 
 /* ---------- Libellés ---------- */
+const sheetTxt=v=>v<4?'à bloc':'choquée '+v+' %', carTxt=v=>v===0?'milieu':(v<0?'avancé ':'reculé ')+Math.abs(v)+' %';
+const seaKind=(h,tp)=>{const st=h/(1.56*tp*tp);return h<.2?'mer plate':st>.03?'clapot court':st>.015?'mer formée':'houle longue'};
 const VAL={
- tws:v=>v+' nds', twa:v=>v+'°', ris:v=>['voile haute','1 ris','2 ris'][v],
- ecouteGV:v=>v<4?'à bloc':'choquée '+v+' %', chariot:v=>v===0?'dans l’axe':(v<0?'au vent ':'sous le vent ')+Math.abs(v)+' %',
+ tws:v=>v+' nds', twa:v=>v+'°', hs:v=>fr1(v,1)+' m',
+ merOff:v=>v===0?'comme le vent':(v<0?Math.abs(v)+'° plus de l’avant':v+'° plus de l’arrière'), tp:v=>fr1(v,v%1?1:0)+' s · '+seaKind(S.hs,v), ris:v=>['voile haute','1 ris','2 ris','3 ris'][v],
+ ecouteGV:sheetTxt, chariot:v=>v===0?'dans l’axe':(v<0?'au vent ':'sous le vent ')+Math.abs(v)+' %',
  halebas:v=>v<5?'mou':v+' %', bordure:v=>v<15?'relâchée':v>85?'étarquée':v+' %', cunningham:v=>v<5?'mou':v+' %', pataras:v=>v<5?'mou':v+' %',
- enrouleur:v=>v+' % déroulé', ecouteG:v=>v<4?'à bloc':'choquée '+v+' %', pointTire:v=>v===0?'milieu':(v<0?'avancé ':'reculé ')+Math.abs(v)+' %'
+ enrouleur:v=>v+' % déroulé', ecouteG:sheetTxt, pointTire:carTxt,
+ risT:v=>v?'1 ris':'pleine', ecouteT:sheetTxt, pointTireT:carTxt, ecouteC:sheetTxt, ecouteA:sheetTxt, ecouteS:sheetTxt,
+ amure:v=>v<15?'courte':v>85?'longue':v+' %', tangon:v=>v<5?'contre l’étai':v>85?'carré':v+'°', hautTangon:v=>v<15?'bas':v>85?'haut':v+' %'
 };
-const KEYS=['ecouteGV','chariot','halebas','bordure','cunningham','pataras','ecouteG','pointTire','enrouleur','ris'];
-const RANGE={ecouteGV:[0,100],chariot:[-100,100],halebas:[0,100],bordure:[0,100],cunningham:[0,100],pataras:[0,100],ecouteG:[0,100],pointTire:[-100,100],enrouleur:[50,100],ris:[0,2]};
-const STEP={ecouteGV:4,chariot:15,halebas:12,bordure:15,cunningham:15,pataras:15,ecouteG:4,pointTire:20,enrouleur:15,ris:1};
+const RANGE={ecouteGV:[0,100],chariot:[-100,100],halebas:[0,100],bordure:[0,100],cunningham:[0,100],pataras:[0,100],ris:[0,3],
+ enrouleur:[50,100],ecouteG:[0,100],pointTire:[-100,100],risT:[0,1],ecouteT:[0,100],pointTireT:[-100,100],ecouteC:[0,100],
+ ecouteA:[0,100],amure:[0,100],ecouteS:[0,100],tangon:[0,90],hautTangon:[0,100]};
+const STEP={ecouteGV:4,chariot:15,halebas:12,bordure:15,cunningham:15,pataras:15,ris:1,enrouleur:15,ecouteG:4,pointTire:20,
+ risT:1,ecouteT:4,pointTireT:20,ecouteC:5,ecouteA:6,amure:15,ecouteS:6,tangon:10,hautTangon:15};
 const ACT={ecouteGV:['Border l’écoute de GV','Choquer l’écoute de GV'],chariot:['Monter le chariot au vent','Descendre le chariot sous le vent'],
  halebas:['Mollir le hale-bas','Reprendre le hale-bas'],bordure:['Relâcher la bordure','Étarquer la bordure'],cunningham:['Mollir le cunningham','Reprendre le cunningham'],
- pataras:['Mollir le pataras','Reprendre le pataras'],ecouteG:['Border l’écoute de génois','Choquer l’écoute de génois'],
- pointTire:['Avancer le point de tire','Reculer le point de tire'],enrouleur:['Rouler du génois','Dérouler du génois'],ris:['Larguer un ris','Prendre un ris']};
+ pataras:['Mollir le pataras','Reprendre le pataras'],ris:['Larguer un ris de GV','Prendre un ris de GV'],
+ enrouleur:['Rouler du génois','Dérouler du génois'],ecouteG:['Border l’écoute de génois','Choquer l’écoute de génois'],pointTire:['Avancer le point de tire','Reculer le point de tire'],
+ risT:['Larguer le ris de trinquette','Prendre le ris de trinquette'],ecouteT:['Border l’écoute de trinquette','Choquer l’écoute de trinquette'],pointTireT:['Avancer le point de tire de trinquette','Reculer le point de tire de trinquette'],
+ ecouteC:['Border l’écoute de code 0','Choquer l’écoute de code 0'],
+ ecouteA:['Border l’écoute de spi','Choquer l’écoute de spi'],amure:['Reprendre la ligne d’amure','Choquer la ligne d’amure'],
+ ecouteS:['Border l’écoute de spi','Choquer l’écoute de spi'],tangon:['Choquer le bras (tangon vers l’avant)','Reprendre le bras (tangon vers l’arrière)'],
+ hautTangon:['Descendre le tangon','Monter le tangon']};
+const OVER={genois:'Roule davantage ou passe à la trinquette.',trinq:'Prends le ris de trinquette.',code0:'Roule-le.',asym:'Affale le spi avant la casse.',sym:'Affale le spi avant la casse.'};
+const SEND={genois:'Dérouler le génois',trinq:'Envoyer la trinquette',code0:'Envoyer le code 0',asym:'Envoyer le spi asymétrique',sym:'Envoyer le spi symétrique'};
 
-/* ---------- UI ---------- */
-const $=id=>document.getElementById(id);
-const scenBox=$('scen');
-SCEN.forEach(sc=>{const b=document.createElement('button');b.className='chip';b.textContent=sc.name;b.dataset.id=sc.id;
-  b.addEventListener('click',()=>{scenId=sc.id;S=Object.assign({},sc.s);syncInputs();update()});scenBox.appendChild(b)});
-document.querySelectorAll('input[type=range]').forEach(inp=>{
-  inp.addEventListener('input',()=>{S[inp.dataset.key]=+inp.value;update()})});
-$('rappel').addEventListener('change',e=>{S.rappel=e.target.checked;update()});
-$('ris').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{S.ris=+b.dataset.v;update()}));
-$('reset').addEventListener('click',()=>{const sc=SCEN.find(x=>x.id===scenId)||SCEN[0];scenId=sc.id;S=Object.assign({},sc.s);syncInputs();update()});
-$('opt').addEventListener('click',()=>{S=optimize(S);syncInputs();update()});
-
-function syncInputs(){
-  document.querySelectorAll('input[type=range]').forEach(inp=>{inp.value=S[inp.dataset.key]});
-  $('rappel').checked=!!S.rappel;
+/* ---------- Optimisation ---------- */
+// plusieurs points de départ : l'écoute et le hale-bas de GV se règlent ensemble
+function optimize(s0,fast){
+  const ek=SAILS[s0.av].ecoute;
+  const starts=[s0,Object.assign({},s0,{ecouteGV:100,halebas:65,[ek]:70}),Object.assign({},s0,{ecouteGV:50,halebas:50,[ek]:40}),Object.assign({},s0,{ecouteGV:5,halebas:20,[ek]:10})];
+  let bestS=null,bestV=-1;
+  for(const st of starts){const r=climb(st,fast),v=evaluate(r).score;if(v>bestV+1e-4){bestV=v;bestS=r}}
+  return bestS;
 }
-
-function optimize(s0){
-  let s=Object.assign({},s0), best=evaluate(s).bs;
-  for(const step of [40,20,10,5,2,1]){
+function climb(s0,fast){
+  let s=Object.assign({},s0), best=evaluate(s).score;
+  const keys=MAIN_KEYS.concat(SAIL_KEYS[s.av]);
+  for(const step of (fast?[40,15,5,2]:[40,20,10,5,2,1])){
     let improved=true, guard=0;
-    while(improved&&guard++<30){improved=false;
-      for(const k of KEYS){
-        const st=k==='ris'?1:k==='enrouleur'?Math.max(5,Math.round(step/5)*5):step;
+    while(improved&&guard++<(fast?12:30)){improved=false;
+      for(const k of keys){
+        const st=(k==='ris'||k==='risT')?1:k==='enrouleur'?Math.max(5,Math.round(step/5)*5):step;
         for(const dir of [-1,1]){
           const [mn,mx]=RANGE[k], nv=clamp(s[k]+dir*st,mn,mx); if(nv===s[k])continue;
-          const t=Object.assign({},s,{[k]:nv}), bs=evaluate(t).bs;
+          const t=Object.assign({},s,{[k]:nv}), bs=evaluate(t).score;
           if(bs>best+1e-4){best=bs;s=t;improved=true}
         }
       }
@@ -426,66 +640,156 @@ function optimize(s0){
   return s;
 }
 
+/* ---------- UI ---------- */
+const scenBox=$('scen');
+SCEN.forEach(sc=>{const b=document.createElement('button');b.className='chip';b.textContent=sc.name;b.dataset.id=sc.id;
+  b.addEventListener('click',()=>{scenId=sc.id;S=scenState(sc);syncInputs();update()});scenBox.appendChild(b)});
+document.querySelectorAll('input[type=range]').forEach(inp=>{
+  inp.addEventListener('input',()=>{S[inp.dataset.key]=+inp.value;update()})});
+$('rappel').addEventListener('change',e=>{S.rappel=e.target.checked;update()});
+$('pilote').addEventListener('change',e=>{S.pilote=e.target.checked;update()});
+$('ris').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{S.ris=+b.dataset.v;update()}));
+$('risT').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{S.risT=+b.dataset.v;update()}));
+$('av').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{S.av=b.dataset.v;update()}));
+$('reset').addEventListener('click',()=>{const sc=SCEN.find(x=>x.id===scenId)||SCEN[0];scenId=sc.id;S=scenState(sc);syncInputs();update()});
+$('opt').addEventListener('click',()=>{S=optimize(S);syncInputs();update()});
+$('lofer').addEventListener('click',()=>{S.twa=clamp(S.twa-2,30,180);syncInputs();update()});
+$('abattre').addEventListener('click',()=>{S.twa=clamp(S.twa+2,30,180);syncInputs();update()});
+document.querySelectorAll('[data-w]').forEach(inp=>{
+  inp.addEventListener('change',()=>{const k=inp.dataset.w,v=parseFloat(String(inp.value).replace(',','.'));
+    if(v>0){W[k]=clamp(v,+inp.min,+inp.max);saveW()}inp.value=W[k];update()})});
+$('w-reset').addEventListener('click',()=>{W=Object.assign({},W0);saveW();syncInputs();update()});
+$('coach').addEventListener('click',e=>{const b=e.target.closest('button[data-sail]');if(b){S.av=b.dataset.sail;update()}});
+
+function syncInputs(){
+  document.querySelectorAll('input[type=range]').forEach(inp=>{inp.value=S[inp.dataset.key]});
+  document.querySelectorAll('[data-w]').forEach(inp=>{inp.value=W[inp.dataset.w]});
+  $('rappel').checked=!!S.rappel; $('pilote').checked=!!S.pilote;
+}
+
 /* Penons */
 const TT_ROWS=[['Haut',.8],['Milieu',.45],['Bas',.15]];
-const ttEls={g:[],m:[]};
-function mkTT(container,key,pairs){
-  TT_ROWS.forEach(([lab])=>{const row=document.createElement('div');row.className='tt';
-    row.innerHTML='<span class="h">'+lab+'</span>'+(pairs?'<svg viewBox="0 0 80 30"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--stbd)" stroke-width="2.4" stroke-linecap="round"/></svg><svg viewBox="0 0 80 30"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--port)" stroke-width="2.4" stroke-linecap="round"/></svg>'
-      :'<svg viewBox="0 0 80 30" style="grid-column:span 2;max-width:180px"><line x1="5" y1="2" x2="5" y2="28" stroke="var(--ink-2)" stroke-width="2"/><path fill="none" stroke="var(--warn)" stroke-width="2.4" stroke-linecap="round"/></svg>');
-    container.appendChild(row);
-    const paths=row.querySelectorAll('path');ttEls[key].push({paths:[...paths],state:['stream','stream'],seed:Math.random()*6});
+/* Vue depuis le poste de barre : voile de profil, penons animés en continu.
+   L'écart d'incidence (d) fixe la position de chaque penon ; les risées le font varier un peu, d'où le battement près des seuils. */
+const TTS={h:{kind:null,d:[0,0,0],blank:false},m:{hid:[0,0,0]}};
+const ttDom={h:null,m:null};
+const SEED=[0.7,2.9,4.6,1.8,5.3,3.7];
+const el=(tag,attrs)=>{const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e};
+const qPt=(p0,p1,p2,u)=>[(1-u)*(1-u)*p0[0]+2*(1-u)*u*p1[0]+u*u*p2[0],(1-u)*(1-u)*p0[1]+2*(1-u)*u*p1[1]+u*u*p2[1]];
+// ruban de penon : on avance pas à pas selon un cap qui dépend de la position le long du penon
+function ribbon(x0,y0,len,head){let x=x0,y=y0,d='M'+x.toFixed(1)+','+y.toFixed(1);const N=12;
+  for(let i=1;i<=N;i++){const f=i/N,a=head(f);x+=Math.cos(a)*len/N;y+=Math.sin(a)*len/N;d+='L'+x.toFixed(1)+','+y.toFixed(1)}return d}
+const gust=(t,s)=>1.4*Math.sin(t*.7+s)+.6*Math.sin(t*2.3+s*2);
+
+function buildHeadTT(kind){
+  const svg=$('h-tt');svg.innerHTML='';const parts={kind,tt:[]};
+  if(kind==='spi'){
+    const A=[40,206],C=[4,96],Hd=[150,14];
+    svg.appendChild(el('path',{d:'M40,206 Q4,96 150,14 Q292,96 262,206 Q150,224 40,206 Z',fill:'var(--spi)','fill-opacity':'.35',stroke:'var(--sail-edge)','stroke-width':'1.6'}));
+    parts.curl=el('path',{fill:'var(--ink)','fill-opacity':'.16',stroke:'var(--ink)','stroke-width':'1.2','stroke-opacity':'.5'});svg.appendChild(parts.curl);
+    parts.luff=[A,C,Hd];
+    const lb=el('text',{x:'58',y:'118',fill:'var(--ink-2)'});lb.textContent='Guindant';svg.appendChild(lb);
+  } else {
+    const T=[46,214],Hd=[100,14],K=[282,206];
+    svg.appendChild(el('path',{d:'M46,214 L100,14 Q228,92 282,206 Q165,226 46,214 Z',fill:'var(--sail)','fill-opacity':'.9',stroke:'var(--sail-edge)','stroke-width':'1.6'}));
+    TT_ROWS.forEach(([lab],i)=>{const h=[.78,.5,.22][i];
+      const lx=T[0]+(Hd[0]-T[0])*h, ly=T[1]+(Hd[1]-T[1])*h, ax=lx+18+(1-h)*8, len=30+(1-h)*16;
+      const lw=el('path',{fill:'none',stroke:'var(--port)','stroke-width':'2.4','stroke-linecap':'round',opacity:'.5'});
+      const ww=el('path',{fill:'none',stroke:'var(--stbd)','stroke-width':'2.6','stroke-linecap':'round'});
+      svg.appendChild(lw);svg.appendChild(ww);svg.appendChild(el('circle',{cx:ax,cy:ly,r:'2.4',fill:'var(--ink)'}));
+      const tx=el('text',{x:(lx-8).toFixed(1),y:(ly+3).toFixed(1),fill:'var(--ink-2)','text-anchor':'end'});tx.textContent=lab;svg.appendChild(tx);
+      parts.tt.push({ax,ay:ly,len,ww,lw});
+    });
+  }
+  ttDom.h=parts;
+}
+function buildMainTT(){
+  const svg=$('m-tt');const H=[46,16],K=[264,204],Q=[252,70];const parts={tt:[]};
+  svg.appendChild(el('path',{d:'M46,16 Q252,70 264,204 L46,204 Z',fill:'var(--sail)','fill-opacity':'.9',stroke:'var(--sail-edge)','stroke-width':'1.6'}));
+  svg.appendChild(el('line',{x1:'44',y1:'8',x2:'44',y2:'214',stroke:'var(--ink)','stroke-width':'4','stroke-linecap':'round'}));
+  svg.appendChild(el('line',{x1:'44',y1:'206',x2:'272',y2:'206',stroke:'var(--ink)','stroke-width':'4','stroke-linecap':'round'}));
+  [.2,.4,.6,.8].forEach(u=>{const [x,y]=qPt(H,Q,K,u);svg.appendChild(el('line',{x1:(x-58).toFixed(1),y1:y.toFixed(1),x2:x.toFixed(1),y2:y.toFixed(1),stroke:'var(--ink-2)','stroke-width':'2.2','stroke-linecap':'round',opacity:'.7'}))});
+  TT_ROWS.forEach(([lab],i)=>{const [x,y]=qPt(H,Q,K,[.2,.4,.6][i]);
+    const p=el('path',{fill:'none',stroke:'var(--warn)','stroke-width':'2.6','stroke-linecap':'round'});svg.appendChild(p);
+    svg.appendChild(el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:'2.4',fill:'var(--ink)'}));
+    const tx=el('text',{x:(x+8).toFixed(1),y:(y-9).toFixed(1),fill:'var(--ink-2)'});tx.textContent=lab;svg.appendChild(tx);
+    parts.tt.push({x,y,p});
+  });
+  ttDom.m=parts;
+}
+buildMainTT();
+
+function animTT(t){
+  const H=ttDom.h, st=TTS.h;
+  if(H&&H.kind==='spi'){
+    const de=st.d[1]+(reduce?0:gust(t,1));
+    let c=clamp((-de+2.5)/6,0,1.3); if(st.blank)c=1.1;
+    const [A,C,Hd]=H.luff;let out='',back='';
+    for(let i=0;i<=16;i++){const u=i/16,[x,y]=qPt(A,C,Hd,u),bulge=Math.sin(Math.PI*u)*c*26*(1+.15*Math.sin(t*6+u*8)*(c>1?1:.3));
+      out+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);back='L'+(x+bulge).toFixed(1)+','+(y+bulge*.25).toFixed(1)+back}
+    H.curl.setAttribute('d',out+back+'Z');
+  } else if(H){
+    H.tt.forEach((o,i)=>{
+      const s=SEED[i], de=st.d[i]+(reduce?0:gust(t,s));
+      if(st.blank){const hd=f=>1.3+.25*f+Math.sin(t*1.5+s)*.15*f;o.ww.setAttribute('d',ribbon(o.ax,o.ay,o.len*.8,hd));o.lw.setAttribute('d',ribbon(o.ax,o.ay,o.len*.8,f=>hd(f)+.1));return}
+      const w=clamp((-de-1)/7,0,1.4), l=clamp((de-2)/7,0,1.4);
+      const wob=(f,sp,amp)=>Math.sin(f*6-t*sp+s)*amp*f;
+      o.ww.setAttribute('d',ribbon(o.ax,o.ay,o.len,f=>-w*1.25+wob(f,9+w*12,.12+w*.55)+(w>1?Math.sin(t*21+s*3)*.6*f:0)));
+      o.lw.setAttribute('d',ribbon(o.ax,o.ay,o.len,f=>l*(.9+1.7*f)+wob(f,9-l*5,.1+.25*l)+.04));
+    });
+  }
+  const M=ttDom.m;
+  if(M)M.tt.forEach((o,i)=>{
+    const s=SEED[i+3], hid=clamp(TTS.m.hid[i]+(reduce?0:gust(t,s)*.14),0,1), k=hid*hid*(3-2*hid);
+    const a0=.2, a1=Math.PI*.75;
+    o.p.setAttribute('d',ribbon(o.x,o.y,30,f=>a0*(1-k)+(a1+.6*f)*k+Math.sin(f*6-t*(9-k*6)+s)*(.12+.1*k)*f));
+    o.p.setAttribute('opacity',(1-.55*k).toFixed(2));
   });
 }
-mkTT($('g-tt'),'g',true);mkTT($('m-tt'),'m',false);
-
-function ttPath(state,t,seed){
-  const N=14;let d='';
-  for(let i=0;i<=N;i++){const f=i/N;let x,y;
-    if(state==='stream'){x=7+f*66;y=15+Math.sin(f*7-t*9+seed)*1.8*f}
-    else if(state==='lift'){x=7+f*52;y=15-f*11+Math.sin(f*9-t*15+seed)*4*f}
-    else if(state==='droop'){x=7+f*18+Math.sin(t*2.5+seed)*2*f;y=15+f*13+Math.sin(f*6-t*4+seed)*1.2*f}
-    else if(state==='flap'){x=7+f*58;y=15+Math.sin(f*5-t*19+seed)*7*f+Math.sin(t*23+seed)*3*f}
-    else {x=7+f*10;y=15+f*12}
-    d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);
-  }
-  return d;
-}
-function classify(d){return d<-7?'flap':d<-2.5?'ww':d<=3.5?'ok':'lw'}
+const classifyJib=d=>d<-7?'flap':d<-2.5?'ww':d<=3.5?'ok':'lw';
+const classifySpi=d=>d<-5?'flap':d<-1.5?'ww':d<=2.5?'ok':'lw';
 
 /* Plan de pont */
 const svgNS='http://www.w3.org/2000/svg', CX=280, CY=258;
 const parts=[];const pg=$('particles');
 for(let i=0;i<46;i++){const l=document.createElementNS(svgNS,'line');pg.appendChild(l);parts.push({el:l,x:Math.random()*560,y:Math.random()*560})}
+const waveEls=[];const wg=$('waves');
+for(let i=0;i<9;i++){const l=document.createElementNS(svgNS,'line');wg.appendChild(l);waveEls.push(l)}
+let wavePhase=0, sea={dx:0,dy:1,gap:120,speed:30,w:1,op:0};
 function sailPath(lx,ly,cx,cy,depth,pos){
-  const dx=cx-lx,dy=cy-ly,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux; // normal vers bâbord (sous le vent)
+  const dx=cx-lx,dy=cy-ly,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux; // normale vers bâbord (sous le vent)
   const sx=lx+ux*L*pos+nx*L*depth*2, sy=ly+uy*L*pos+ny*L*depth*2;
-  return 'M'+lx+','+ly+' Q'+sx.toFixed(1)+','+sy.toFixed(1)+' '+cx.toFixed(1)+','+cy.toFixed(1)+' Z';
+  return 'M'+lx.toFixed(1)+','+ly.toFixed(1)+' Q'+sx.toFixed(1)+','+sy.toFixed(1)+' '+cx.toFixed(1)+','+cy.toFixed(1)+' Z';
 }
-function arrow(g,angDeg,label,r1,r2){
+function arrow(g,angDeg,label,r1,r2,lo=14){
   const a=angDeg*D2R,ux=Math.sin(a),uy=-Math.cos(a);
   const x1=CX+ux*r1,y1=CY+uy*r1,x2=CX+ux*r2,y2=CY+uy*r2;
   const [ln,hd,tx]=g.children;
   ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);ln.setAttribute('x2',x2+ux*10);ln.setAttribute('y2',y2+uy*10);
   const px=-uy,py=ux;
   hd.setAttribute('d','M'+x2+','+y2+' L'+(x2+ux*16+px*7)+','+(y2+uy*16+py*7)+' L'+(x2+ux*16-px*7)+','+(y2+uy*16-py*7)+' Z');
-  const lx=CX+ux*(r1+14), ly=CY+uy*(r1+14);
+  const lx=CX+ux*(r1+lo), ly=CY+uy*(r1+lo);
   tx.setAttribute('x',clamp(lx,8,552));tx.setAttribute('y',clamp(ly+4,16,552));
   tx.setAttribute('text-anchor',ux>.3?'end':ux<-.3?'start':'middle');tx.textContent=label;
 }
 const setL=(el,x1,y1,x2,y2)=>{el.setAttribute('x1',x1);el.setAttribute('y1',y1);el.setAttribute('x2',x2);el.setAttribute('y2',y2)};
+const showEl=(id,on)=>{$(id).style.display=on?'':'none'};
 
 let R=null, flow={x:0,y:0};
 function update(){
   R=evaluate(S);
+  const sail=R.sail, kind=sail.kind, spi=kind==='spi';
   // contrôles
   for(const k in VAL){const o=$('o-'+k);if(o)o.textContent=VAL[k](S[k])}
   $('ris').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===S.ris));
+  $('risT').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===S.risT));
+  $('av').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.av));
+  document.querySelectorAll('[data-sail]').forEach(el=>{el.hidden=el.dataset.sail!==S.av});
   scenBox.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===scenId));
 
   // instruments
   $('i-bs').innerHTML=fr1(R.bs,2)+'<small>nds</small>';
-  $('i-pol').textContent=R.pol>0?Math.round(R.bs/R.pol*100)+' % de la polaire ('+fr1(R.pol)+')':'Dans le lit du vent';
+  $('i-pol').textContent=R.pol>0?Math.round(R.bs/R.pol*100)+' % de la polaire GV + génois ('+fr1(R.pol)+')':'Dans le lit du vent';
   $('i-awa').innerHTML=Math.round(R.awaShow)+'<small>°</small>';
   $('i-aws').textContent=fr1(R.awsShow)+' nds apparents';
   const vmg=R.bs*Math.cos(S.twa*D2R);
@@ -494,98 +798,261 @@ function update(){
   $('i-heel').innerHTML=Math.round(R.heel)+'<small>°</small>';
   $('i-heelm').style.left=clamp(R.heel/40*100,0,100)+'%';
   $('i-helm').innerHTML=fr1(R.helm,0)+'<small>°</small>';
-  $('i-helms').textContent=R.helm<3?'neutre':R.helm<=6?'légèrement ardente':R.helm<=9?'ardente':'très ardente, le bateau lofe';
+  $('i-helms').textContent=R.helm<3?'neutre':R.helm<=6?'légèrement ardente':R.helm<=9?'ardente':'très ardente, risque de départ au lof';
+  $('plan-tag').textContent='GV '+['haute','1 ris','2 ris','3 ris'][S.ris]+' · '+sail.name+' '+fr1(R.A_H,1)+' m²';
 
-  // plan
+  // plan : GV
   const b=R.boom*D2R, bx=CX-170*Math.sin(b), by=212+170*Math.cos(b);
-  $('m-sail').setAttribute('d',sailPath(CX,212,bx,by,R.depthM/100,.45));
+  const gvScale=[1,.9,.8,.7][S.ris];
+  $('m-sail').setAttribute('d',sailPath(CX,212,bx,by,R.depthM/100*gvScale,.45));
   setL($('m-boom'),CX,212,bx,by);
-  const tb=(R.boom+R.twM)*D2R; setL($('m-top'),CX,212,CX-80*Math.sin(tb),212+80*Math.cos(tb));
+  const tb=(R.boom+R.twM)*D2R; setL($('m-top'),CX,212,CX-80*gvScale*Math.sin(tb),212+80*gvScale*Math.cos(tb));
   const carX=CX-32*S.chariot/100; $('m-car').setAttribute('x',carX-5);$('m-car').setAttribute('y',388);
   setL($('m-sheet'),CX-160*Math.sin(b),212+160*Math.cos(b),carX,392);
-  const g=R.angG*D2R, LP=229*R.fr, gx=CX-LP*Math.sin(g), gy=52+LP*Math.cos(g);
-  $('g-sail').setAttribute('d',sailPath(CX,52,gx,gy,R.depthG/100,.4));
-  const tg=(R.angG+R.twG)*D2R; setL($('g-top'),CX,182,CX-LP*.32*Math.sin(tg),182+LP*.32*Math.cos(tg));
-  const gcy=300+32*S.pointTire/100; $('g-car').setAttribute('x',217);$('g-car').setAttribute('y',gcy-3.5);
-  setL($('g-sheet'),gx,gy,222,gcy);setL($('g-sheet2'),222,gcy,240,400);
+  // plan : voile d'avant
+  const hs=R.hs, g=hs.ang*D2R;
+  let tx,ty;
+  if(S.av==='sym'){const p=S.tangon*D2R;tx=CX+150*Math.sin(p);ty=212-150*Math.cos(p);setL($('h-pole'),CX,212,tx,ty);setL($('h-guy'),tx,ty,330,452)}
+  else [tx,ty]=sail.tack;
+  showEl('h-pole',S.av==='sym');showEl('h-guy',S.av==='sym');showEl('h-sprit',S.av==='code0'||S.av==='asym');
+  const gx=tx-hs.LP*Math.sin(g), gy=ty+hs.LP*Math.cos(g);
+  const hp=$('h-sail');
+  hp.setAttribute('d',sailPath(tx,ty,gx,gy,hs.depth/100,spi?.5:.4));
+  hp.setAttribute('fill',spi?'var(--spi)':'var(--sail)');hp.setAttribute('fill-opacity',spi?'.55':'.72');
+  showEl('h-top',!spi);
+  if(!spi){const tg=(hs.ang+hs.tw)*D2R;setL($('h-top'),CX,sail.top,CX-hs.LP*.32*Math.sin(tg),sail.top+hs.LP*.32*Math.cos(tg))}
+  const jib=kind==='jib';
+  showEl('h-car',jib);showEl('h-sheet2',jib);
+  if(jib){const car=S.av==='trinq'?S.pointTireT:S.pointTire, gcy=300+32*car/100;
+    $('h-car').setAttribute('x',217);$('h-car').setAttribute('y',gcy-3.5);setL($('h-sheet'),gx,gy,222,gcy);setL($('h-sheet2'),222,gcy,240,400)}
+  else setL($('h-sheet'),gx,gy,232,452);
   const aAng=Math.atan2(S.tws*Math.sin(S.twa*D2R),S.tws*Math.cos(S.twa*D2R)+R.bs)/D2R;
   arrow($('w-true'),S.twa,'Réel '+S.tws+' nds',262,222);
-  arrow($('w-app'),aAng,'App. '+fr1(R.awsShow)+' nds',262,222);
-  const a=S.twa*D2R; flow.x=-S.tws*Math.sin(a); flow.y=S.tws*Math.cos(a)+R.bs; // svg coords (y vers le bas)
+  arrow($('w-app'),aAng,'App. '+fr1(R.awsShow)+' nds',262,222,Math.abs(aAng-S.twa)<25?-62:14);
+  const a=S.twa*D2R; flow.x=-S.tws*Math.sin(a); flow.y=S.tws*Math.cos(a)+R.bs;
+  // vagues : crêtes perpendiculaires à leur direction, écart lié à la période (échelle réduite)
+  const wv=R.wa*D2R, wAbs=Math.abs(R.wa);
+  const wKind=wAbs<35?'de face':wAbs<70?'de trois-quarts avant':wAbs<110?'de travers':wAbs<150?'de trois-quarts arrière':'de l’arrière';
+  $('merHint').textContent='Les vagues arrivent '+wKind+' : '+Math.round(wAbs)+'° de l’étrave, '+(R.wa>=0?'tribord':'bâbord')+'.';
+  sea={dx:-Math.sin(wv),dy:Math.cos(wv),gap:clamp(1.56*S.tp*S.tp*44*.12,34,260),speed:12+S.tp*5,w:1+S.hs*1.2,op:S.hs<.1?0:clamp(.12+S.hs*.12,.12,.55)};
+  $('waves').setAttribute('opacity',sea.op);$('waves').setAttribute('stroke-width',sea.w);
+  $('plan-tag').textContent+=' · mer '+fr1(S.hs,1)+' m / '+fr1(S.tp,S.tp%1?1:0)+' s';
 
-  // génois
-  const gStates=TT_ROWS.map(([,h])=>R.blanket?'blank':classify(R.aoaG(h)-R.tgtG));
-  gStates.forEach((st,i)=>{const e=ttEls.g[i];e.state=st==='blank'?['droop','droop']:st==='flap'?['flap','flap']:st==='ww'?['lift','stream']:st==='lw'?['stream','droop']:['stream','stream']});
-  const gv=$('g-verdict'), gm=gStates[1];
-  const topVsBot=gStates[0]!==gStates[2];
-  let gtxt,gcls;
-  if(R.blanket){gtxt='Génois déventé derrière la GV : il ne porte plus. Enroule-le ou tangonne-le en ciseaux.';gcls='warn'}
-  else if(gm==='flap'){gtxt='Le guindant fasseye : borde franchement ou abats.';gcls='bad'}
-  else if(gm==='ww'){gtxt='Penon au vent qui se lève : borde l’écoute ou abats un peu.';gcls='warn'}
-  else if(gm==='lw'){gtxt='Penon sous le vent qui décroche : choque l’écoute ou lofe.';gcls='warn'}
-  else {gtxt='Les deux penons filent au milieu.';gcls='ok'}
-  if(!R.blanket&&topVsBot){
-    if(gStates[0]==='ww'||gStates[0]==='flap'||gStates[2]==='lw')gtxt+=' Le haut lève avant le bas : avance le point de tire pour fermer la chute.';
-    else gtxt+=' Le bas lève avant le haut : recule le point de tire pour ouvrir la chute.';
-    if(gcls==='ok')gcls='warn';
-  }
-  gv.className='verdict '+gcls; gv.textContent=gtxt;
-  $('g-score').textContent=Math.round(R.sG*100)+' %';
-  $('g-figs').innerHTML=fig('Incidence',Math.round(R.aoaG(H))+'°','cible '+Math.round(R.tgtG)+'°')+fig('Creux',fr1(R.depthG,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Vrillage',Math.round(R.twG)+'°','cible '+Math.round(R.idealTwG)+'°');
-
-  // GV
-  const lim=[3,6,9], mStates=lim.map(l=>R.twM<R.idealTwM-l?'curl':'stream');
-  mStates.forEach((st,i)=>{ttEls.m[i].state=[st==='curl'?'droop':'stream']});
-  const mv=$('m-verdict'), mc=classify(R.dM);
-  let mtxt,mcls='ok';
-  if(mc==='flap'){mtxt='La GV fasseye au guindant : borde l’écoute ou monte le chariot.';mcls='bad'}
-  else if(mc==='ww'){mtxt='Incidence trop faible : la GV porte mal. Borde un peu ou monte le chariot au vent.';mcls='warn'}
-  else if(mc==='lw'){mtxt=R.awa>70?'GV trop bordée pour cette allure : choque l’écoute.':'Bôme trop au vent pour ce vent : descends le chariot ou choque un peu.';mcls='warn'}
-  else mtxt=R.tgtM>OPTM+1?'GV choquée jusqu’aux barres de flèche, c’est le maximum à cette allure.':'Bonne incidence sur la bôme.';
-  if(mStates[0]==='curl'){mtxt+=' Le penon de chute du haut se cache : chute trop fermée, ouvre-la (écoute ou hale-bas).';if(mcls==='ok')mcls='warn'}
-  else if(R.twM>R.idealTwM+6){mtxt+=' Chute très ouverte : le haut ne porte plus, reprends le hale-bas ou l’écoute.';if(mcls==='ok')mcls='warn'}
-  mv.className='verdict '+mcls; mv.textContent=mtxt;
-  $('m-score').textContent=Math.round(R.sM*100)+' %';
-  $('m-figs').innerHTML=fig('Incidence',Math.round(R.aoaM(H))+'°','cible '+Math.round(R.tgtM)+'°')+fig('Creux',fr1(R.depthM,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Vrillage',Math.round(R.twM)+'°','cible '+Math.round(R.idealTwM)+'°');
-
-  renderCoach();
+  renderHeadsail(); renderMain(); renderCoach(); scheduleBest();
   save();
 }
 function fig(k,v,t){return '<div class="fig"><span class="k">'+k+'</span><span class="v">'+v+'</span><span class="t">'+t+'</span></div>'}
 
+/* Formes exagérées : sections bas / milieu / haut vues de dessous, depuis le guindant.
+   Creux ×2,5 (×1,5 pour les spis), vrillage ×2. Pointillés : forme visée. */
+const SEC=[['Bas',.15,'var(--ink)'],['Milieu',.45,'var(--accent)'],['Haut',.8,'var(--sea)']];
+function camberPts(x0,y0,L,theta,depth,pos){
+  const ux=Math.cos(theta),uy=Math.sin(theta),nx=-uy,ny=ux,p=clamp(pos,.15,.85);let d='';
+  for(let i=0;i<=24;i++){const x=i/24,f=x<p?(2*p*x-x*x)/(p*p):((1-2*p)+2*p*x-x*x)/((1-p)*(1-p));
+    const px=x0+ux*x*L+nx*depth*L*f, py=y0+uy*x*L+ny*depth*L*f; d+=(i?'L':'M')+px.toFixed(1)+','+py.toFixed(1)}
+  return d;
+}
+function drawShape(id,o){
+  // repère : guindant à gauche, l'arrière vers la droite, le côté sous le vent vers le bas
+  const X0=34,Y0=16,ex=o.spi?1.5:2.5;let g='',maxY=Y0+20;
+  const sec=(L,th,dep,pos)=>{const ux=Math.cos(th),uy=Math.sin(th);
+    return {d:camberPts(X0,Y0,L,th,dep,pos),ex:X0+ux*L,ey:Y0+uy*L,mx:X0+ux*pos*L-uy*dep*L,my:Y0+uy*pos*L+ux*dep*L}};
+  g+='<text x="'+(X0-6)+'" y="'+(Y0-6)+'" fill="var(--ink-2)" text-anchor="middle">mât</text>';
+  SEC.forEach(([lab,h,col],i)=>{
+    const L=o.L[i];
+    if(o.ghost){const s=sec(L,o.twIdeal*(h-.15)*2*D2R,o.depthIdeal/100*ex,o.posIdeal/100);maxY=Math.max(maxY,s.my,s.ey);
+      g+='<path d="'+s.d+'" fill="none" stroke="'+col+'" stroke-width="1.2" stroke-dasharray="3 4" opacity=".6"/>'}
+    const s=sec(L,o.tw*(h-.15)*2*D2R,o.depth/100*ex*(1+.1*(h-.45)),o.pos/100);maxY=Math.max(maxY,s.my,s.ey);
+    g+='<line x1="'+X0+'" y1="'+Y0+'" x2="'+s.ex.toFixed(1)+'" y2="'+s.ey.toFixed(1)+'" stroke="'+col+'" stroke-width="1" opacity=".35"/>';
+    g+='<path d="'+s.d+'" fill="none" stroke="'+col+'" stroke-width="2.6" stroke-linecap="round"/>';
+    g+='<circle cx="'+s.mx.toFixed(1)+'" cy="'+s.my.toFixed(1)+'" r="3.4" fill="'+col+'"/>';
+  });
+  g+='<circle cx="'+X0+'" cy="'+Y0+'" r="4.5" fill="var(--ink)"/>';
+  const el=$(id);el.setAttribute('viewBox','0 0 290 '+Math.ceil(maxY+12));el.innerHTML=g;
+  // légende et lecture
+  let lg='<span><i style="background:var(--ink)"></i>Bas</span><span><i style="background:var(--accent)"></i>Milieu</span><span><i style="background:var(--sea)"></i>Haut</span>';
+  lg+='<span class="full">Vue de dessous, depuis le mât. Trait plein : ta voile'+(o.ghost?' · pointillés : forme visée':'')+' · point : creux maximal. Creux ×'+(o.spi?'1,5':'2,5')+', vrillage ×2.</span>';
+  if(o.ghost){const r=[];
+    const dd=o.depth-o.depthIdeal, dp=o.pos-o.posIdeal, dt=o.tw-o.twIdeal;
+    r.push(dd>1.5?'voile <b>plus creuse</b> que la cible':dd<-1.5?'voile <b>plus plate</b> que la cible':'creux <b>juste</b>');
+    r.push(dp>4?'creux <b>trop en arrière</b>':dp<-4?'creux <b>trop en avant</b>':'creux <b>bien placé</b>');
+    r.push(dt>3?'haut <b>trop ouvert</b>':dt<-3?'haut <b>trop fermé</b>':'vrillage <b>juste</b>');
+    lg+='<span class="full">Lecture : '+r.join(', ')+'.</span>'}
+  $(id.replace('shape','legend')).innerHTML=lg;
+}
+
+function renderHeadsail(){
+  const sail=R.sail, kind=sail.kind, spi=kind==='spi', hs=R.hs, nm=sail.name.toLowerCase();
+  $('h-name').textContent=sail.name;
+  const cls=spi?classifySpi:classifyJib;
+  const st=TT_ROWS.map(([,h])=>R.blanket?'blank':cls(R.aoaH(h)-R.tgtH));
+  const vk=spi?'spi':'jib'; if(!ttDom.h||ttDom.h.kind!==vk)buildHeadTT(vk);
+  TTS.h={kind:vk,d:TT_ROWS.map(([,h])=>R.aoaH(h)-R.tgtH),blank:R.blanket};
+  $('twa-now').textContent='angle au vent '+S.twa+'°';
+  $('h-ttleg').innerHTML=spi
+    ?'<span class="full">Le guindant du spi doit friser légèrement. Choque jusqu’au frisé, reborde dès qu’il se replie. Le pli sombre montre le frisé.</span>'
+    :'<span><i style="background:var(--stbd)"></i>Au vent (tribord), vu directement</span><span><i style="background:var(--port);opacity:.5"></i>Sous le vent (bâbord), vu à travers la voile</span>'
+     +'<span class="full">Penon au vent qui se lève : borde ou abats. Penon sous le vent qui décroche : choque ou lofe. Les trois paires filent ensemble quand le réglage est juste. Les risées les font bouger un peu.</span>';
+  const mid=st[1], atMax=R.tgtH>sail.opt+1;
+  let txt,c='ok';
+  if(R.blanket){c='warn';txt=spi?'Le spi asy est masqué par la GV à cette allure : lofe un peu (et empanne plus souvent) ou passe au spi symétrique.'
+    :sail.name+' déventé derrière la GV : il ne porte plus. '+(S.av==='code0'?'Roule-le.':'Roule-le ou tangonne-le en ciseaux.')}
+  else if(spi){
+    if(mid==='flap'){c='bad';txt='Le spi s’effondre : reborde franchement l’écoute ou abats.'}
+    else if(mid==='ww'){c='warn';txt='Le guindant se replie trop : reborde un peu l’écoute.'}
+    else if(mid==='lw'){c='warn';txt='Spi trop bordé, le guindant ne frise jamais : choque jusqu’à le voir friser.'}
+    else txt=atMax?'Spi choqué au maximum : à cette allure il pousse plus qu’il ne porte.':'Le guindant frise à peine : c’est le bon réglage.';
+    if(S.av==='sym'){
+      const dp=S.tangon-R.idealPole;
+      if(dp<-12){txt+=' Tangon trop sur l’avant : reprends le bras (environ '+Math.round(R.idealPole)+'°).';if(c==='ok')c='warn'}
+      else if(dp>12){txt+=' Tangon trop en arrière : choque le bras (environ '+Math.round(R.idealPole)+'°).';if(c==='ok')c='warn'}
+      if(S.hautTangon<25){txt+=' Tangon trop bas : monte-le pour mettre les points d’écoute à la même hauteur.';if(c==='ok')c='warn'}
+      else if(S.hautTangon>75){txt+=' Tangon trop haut : descends-le, le guindant s’ouvre en haut.';if(c==='ok')c='warn'}
+    }
+    if(S.av==='asym'&&Math.abs(S.amure-R.idealAmure)>25){txt+=S.amure<R.idealAmure?' Choque la ligne d’amure : le spi tournera vers le vent.':' Reprends la ligne d’amure : le guindant sera plus tendu.';if(c==='ok')c='warn'}
+  } else {
+    if(mid==='flap'){c='bad';txt='Le guindant fasseye : borde franchement ou abats.'}
+    else if(mid==='ww'){c='warn';txt='Penon au vent qui se lève : borde l’écoute ou abats un peu.'}
+    else if(mid==='lw'){c='warn';txt='Penon sous le vent qui décroche : choque l’écoute ou lofe.'}
+    else txt=atMax?nm.charAt(0).toUpperCase()+nm.slice(1)+' choqué au maximum pour cette allure.':'Les deux penons filent au milieu.';
+    if(kind==='jib'&&st[0]!==st[2]){
+      if(st[0]==='ww'||st[0]==='flap'||st[2]==='lw')txt+=' Le haut lève avant le bas : avance le point de tire pour fermer la chute.';
+      else txt+=' Le bas lève avant le haut : recule le point de tire pour ouvrir la chute.';
+      if(c==='ok')c='warn';
+    }
+  }
+  if(R.overload){txt+=' Vent apparent '+fr1(R.aws,0)+' nds : trop pour '+(S.av==='genois'&&S.enrouleur<100?'ce génois roulé':'cette voile')+' (≈ '+Math.round(R.lim)+' nds). '+OVER[S.av];c='bad'}
+  $('h-verdict').className='verdict '+c; $('h-verdict').textContent=txt;
+  $('h-score').textContent=Math.round(Math.min(1,R.sH)*100)+' %';
+  let figs=fig('Incidence',Math.round(R.aoaH(H))+'°','cible '+Math.round(R.tgtH)+'°');
+  if(kind==='jib')figs+=fig('Creux',fr1(hs.depth,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Creux à',Math.round(R.draftH)+' %','cible '+Math.round(R.idealDraftH)+' %')+fig('Vrillage',Math.round(hs.tw)+'°','cible '+Math.round(R.idealTwH)+'°');
+  else if(S.av==='sym')figs+=fig('Tangon',S.tangon+'°','cible '+Math.round(R.idealPole)+'°')+fig('Hauteur',S.hautTangon+' %','cible 50 %');
+  else if(S.av==='asym')figs+=fig('Amure',S.amure+' %','cible '+Math.round(R.idealAmure)+' %')+fig('Surface',fr1(R.A_H,1)+' m²','');
+  else figs+=fig('Surface',fr1(R.A_H,1)+' m²','')+fig('Limite',sail.lim+' nds','vent apparent');
+  $('h-figs').innerHTML=figs;
+  const Ls=spi?[200,195,160]:S.av==='code0'?[220,170,110]:[220,150,80];
+  drawShape('h-shape',{L:Ls,spi,depth:hs.depth,pos:R.draftH,tw:hs.tw,ghost:kind==='jib',depthIdeal:R.idealDepth,posIdeal:R.idealDraftH,twIdeal:R.idealTwH});
+}
+
+function renderMain(){
+  const lim=[3,6,9], mStates=lim.map(l=>R.twM<R.idealTwM-l?'curl':'stream');
+  // 0 = file, 1 = caché derrière la chute ; 0,5 en haut quand le vrillage est juste
+  TTS.m.hid=[0,3,6].map(off=>clamp((R.idealTwM-off-R.twM)/4+.5,0,1));
+  const mc=classifyJib(R.dM);
+  let txt,c='ok';
+  if(mc==='flap'){txt='La GV fasseye au guindant : borde l’écoute ou monte le chariot.';c='bad'}
+  else if(mc==='ww'){txt='Incidence trop faible : la GV porte mal. Borde un peu ou monte le chariot au vent.';c='warn'}
+  else if(mc==='lw'){txt=R.awa>70?'GV trop bordée pour cette allure : choque l’écoute.':'Bôme trop au vent pour ce vent : descends le chariot ou choque un peu.';c='warn'}
+  else txt=R.tgtM>OPTM+1?'GV choquée jusqu’aux barres de flèche, c’est le maximum à cette allure.':'Bonne incidence sur la bôme.';
+  if(mStates[0]==='curl'){txt+=' Le penon de chute du haut se cache : chute trop fermée, ouvre-la (écoute ou hale-bas).';if(c==='ok')c='warn'}
+  else if(R.twM>R.idealTwM+6){txt+=' Chute très ouverte : le haut ne porte plus, reprends le hale-bas ou l’écoute.';if(c==='ok')c='warn'}
+  $('m-verdict').className='verdict '+c; $('m-verdict').textContent=txt;
+  $('m-score').textContent=Math.round(Math.min(1,R.sM)*100)+' %';
+  $('m-figs').innerHTML=fig('Incidence',Math.round(R.aoaM(H))+'°','cible '+Math.round(R.tgtM)+'°')+fig('Creux',fr1(R.depthM,0)+' %','cible '+fr1(R.idealDepth,0)+' %')+fig('Creux à',Math.round(R.draftM)+' %','cible '+Math.round(R.idealDraftM)+' %')+fig('Vrillage',Math.round(R.twM)+'°','cible '+Math.round(R.idealTwM)+'°');
+  drawShape('m-shape',{L:[220,175,110],depth:R.depthM,pos:R.draftM,tw:R.twM,ghost:true,depthIdeal:R.idealDepth,posIdeal:R.idealDraftM,twIdeal:R.idealTwM});
+  if(R.draftM>R.idealDraftM+6&&!/ouvre|reprends/.test(txt)){$('m-verdict').textContent=txt+' Le creux recule : reprends le cunningham.';if(c==='ok')$('m-verdict').className='verdict warn'}
+}
+
+/* Coach : petits gestes + choix de la voile d'avant (calcul différé) */
+let bestTimer=null, best=null;
+function scheduleBest(){
+  clearTimeout(bestTimer);
+  bestTimer=setTimeout(()=>{
+    const key=JSON.stringify([S,W]);
+    best={key,list:SAIL_IDS.map(id=>{const so=optimize(Object.assign({},S,{av:id}),true);const r=evaluate(so);return {id,s:so,bs:r.bs,sc:r.score,load:r.pilotLoad}}).sort((x,y)=>y.sc-x.sc)};
+    // cap : la VMG serait-elle meilleure 5° plus haut ou plus bas (voiles bien réglées) ?
+    if(S.twa<75||S.twa>110){
+      const vmgAt=tw=>Math.abs(evaluate(optimize(Object.assign({},S,{twa:tw}),true)).score*Math.cos(tw*D2R));
+      const v0=vmgAt(S.twa), opts=[-5,5].filter(d=>S.twa+d>=32&&S.twa+d<=180).map(d=>({d,v:vmgAt(S.twa+d)})).sort((x,y)=>y.v-x.v);
+      if(opts.length&&opts[0].v>v0+.03)best.heading={d:opts[0].d,gain:opts[0].v-v0,up:S.twa<90};
+    }
+    renderCoach();
+  },220);
+}
 function renderCoach(){
-  const base=R.bs, items=[];
-  for(const k of KEYS){
+  const base=R.score, items=[];
+  for(const k of MAIN_KEYS.concat(SAIL_KEYS[S.av])){
     for(const dir of [-1,1]){
-      const [mn,mx]=RANGE[k], nv=clamp(S[k]+dir*STEP[k],mn,mx); if(nv===S[k])continue;
-      const gain=evaluate(Object.assign({},S,{[k]:nv})).bs-base;
+      let gain=-1;const [mn,mx]=RANGE[k];
+      for(const m of [1,3,6]){const nv=clamp(S[k]+dir*STEP[k]*m,mn,mx); if(nv===S[k])continue;
+        gain=Math.max(gain,evaluate(Object.assign({},S,{[k]:nv})).score-base)}
       if(gain>.02)items.push({txt:ACT[k][dir<0?0:1],gain});
     }
   }
   items.sort((a,b)=>b.gain-a.gain);
+  let html='';
+  if(best&&best.key===JSON.stringify([S,W])){
+    const cur=best.list.find(x=>x.id===S.av), top=best.list[0];
+    if(top.id!==S.av&&top.sc-cur.sc>.15)
+      html+='<li class="sailpick"><span>Voile conseillée ici : <b>'+SAILS[top.id].name+'</b>, ≈ '+fr1(top.bs,1)+' nds bien réglée (contre '+fr1(cur.bs,1)+' avec '+(S.av==='trinq'||S.av==='sym'||S.av==='asym'?'la ':'le ')+SAILS[S.av].name.toLowerCase()+').</span><button class="btn small" data-sail="'+top.id+'">'+SEND[top.id]+'</button></li>';
+  }
+  if(best&&best.key===JSON.stringify([S,W])&&best.heading){const hd=best.heading;
+    html+='<li class="sailpick"><span>'+(hd.d>0?'Abattre':'Lofer')+' de 5° : meilleure VMG '+(hd.up?'au vent':'sous le vent')+(S.hs>=.8&&hd.d>0&&hd.up?' dans cette mer':'')+'.</span><span class="gain">+'+fr1(hd.gain,2)+' nd</span></li>'}
   const diag=[];
+  if(S.hs>=.8&&R.seaF<.9)diag.push('La mer coûte environ '+Math.round((1-R.seaF)*100)+' % de vitesse ici ('+seaKind(S.hs,S.tp)+').'+(R.awa<60?' Garde de la puissance : plus de creux, chute plus ouverte.':''));
+  if(R.surfSea>.03)diag.push('Houle portante : le bateau peut surfer, barre active dans les vagues.');
+  const wA=Math.abs(R.wa);
+  if(S.hs>=1&&wA>=65&&wA<=115)diag.push('Mer de travers : le bateau roule. Garde de la vitesse et abats un peu dans les plus grosses vagues.');
+  if(S.hs>=1&&wA>140&&S.av==='sym')diag.push('Mer arrière sous spi sym : risque de roulis rythmique. Descends un peu le tangon et reprends l’écoute.');
+  if(R.overload)diag.push('Trop de vent pour '+(S.av==='trinq'||S.av==='sym'||S.av==='asym'?'la ':'le ')+R.sail.name.toLowerCase()+' : '+fr1(R.aws,0)+' nds apparents pour une limite d’environ '+Math.round(R.lim)+'. '+OVER[S.av]);
+  if(R.overM)diag.push('Ta règle de ris : '+['','1 ris','2 ris','3 ris'][R.reqRis]+' à partir de '+[0,W.r1,W.r2,W.r3][R.reqRis]+' nds de vent réel. Tu es en GV '+['haute','à 1 ris','à 2 ris'][S.ris]+' : prends '+(R.reqRis-S.ris>1?(R.reqRis-S.ris)+' ris':'un ris')+'.');
+  if(S.pilote)pilotAdvice().forEach(t=>diag.push(t));
+  if(S.av==='genois'&&S.enrouleur<=75&&S.tws>=20&&R.awa<90)diag.push('Génois très roulé : il devient creux avec le creux reculé. Au-delà d’environ 25 nds, la trinquette sur l’étai largable porte mieux, plus plate et plus basse.');
   if(R.heel>25)diag.push('Trop de gîte ('+Math.round(R.heel)+'°) : le bateau dérape et la barre durcit. Réduis la puissance avant le reste.');
   else if(R.heel<6&&S.tws>=7&&R.awa<70)diag.push('Peu de gîte : il reste de la puissance à prendre.');
-  if(R.helm>7&&R.awa<150)diag.push('Barre ardente : ouvre la chute de GV ou descends le chariot.');
-  if(R.blanket)diag.push('Au vent arrière, le génois est masqué par la GV : enrouleur ou ciseaux.');
-  let html=diag.map(d=>'<li class="diag"><span>'+d+'</span></li>').join('');
+  if(R.helm>7&&R.awa<150)diag.push(R.sail.kind==='spi'?'Barre très ardente sous spi : risque de départ au lof. Choque l’écoute de GV et le hale-bas.':'Barre ardente : ouvre la chute de GV ou descends le chariot.');
+  html+=diag.map(d=>'<li class="diag"><span>'+d+'</span></li>').join('');
   html+=items.slice(0,4).map(i=>'<li><span>'+i.txt+'</span><span class="gain">+'+fr1(i.gain,2)+' nd</span></li>').join('');
   if(!items.length)html+='<li><span>Réglage au point : plus rien à gagner sur ces commandes.</span><span class="gain">✓</span></li>';
   $('coach').innerHTML=html;
+  renderAdvice();
 }
 
-/* Animation */
-const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-let last=performance.now();
-function frame(now){
-  const dt=Math.min(.05,(now-last)/1000);last=now;const t=reduce?0:now/1000;
-  ['g','m'].forEach(k=>ttEls[k].forEach(e=>e.paths.forEach((p,i)=>p.setAttribute('d',ttPath(e.state[i],t,e.seed+i)))));
-  const sp=Math.hypot(flow.x,flow.y)||1, ux=flow.x/sp, uy=flow.y/sp, v=reduce?0:(30+sp*6)*dt;
-  for(const p of parts){p.x+=ux*v;p.y+=uy*v;
-    if(p.x<-20)p.x+=600;if(p.x>580)p.x-=600;if(p.y<-20)p.y+=600;if(p.y>580)p.y-=600;
-    setL(p.el,p.x,p.y,p.x-ux*12,p.y-uy*12)}
-  requestAnimationFrame(frame);
+/* Pilote automatique : conseils pour qu'il force le moins */
+const loadTxt=v=>v<25?'faible':v<50?'moyenne':v<75?'forte':'très forte';
+function pilotAdvice(){
+  const p=R.pl, out=[], wA=Math.abs(R.wa);
+  out.push('Charge du pilote : '+loadTxt(R.pilotLoad)+' ('+Math.round(R.pilotLoad)+'/100). Sous pilote, le coach préfère un bateau équilibré à quelques dixièmes de nœud.');
+  if(p.helm>8)out.push('Barre ardente ('+fr1(R.helm,0)+'°) : le pilote force en permanence. Descends le chariot, ouvre la chute de GV ou prends un ris pour revenir vers 2 à 4° de barre.');
+  if(p.heel>0)out.push('Gîte '+Math.round(R.heel)+'° : au-delà de 18 à 20°, le safran décroche et le pilote lutte. Réduis la toile plutôt que de compter sur lui.');
+  if(R.overload)out.push('Voile d’avant surchargée : sous pilote, réduis-la tout de suite, il ne sent pas les risées venir.');
+  else if(R.overM)out.push('Sous pilote, mieux vaut avoir le ris pris avant la risée qu’après.');
+  if(p.spi>0)out.push(S.av==='sym'?'Spi sym sous pilote : risque de roulis et d’empannage. Préfère le génois, ou au moins tangon bas et écoute reprise.':'Spi asy sous pilote : surveille les départs au lof. Le code 0 ou le génois fatiguent beaucoup moins le pilote.');
+  if(S.hs>=1&&wA>110&&wA<165)out.push('Mer de trois-quarts arrière : chaque vague fait partir le bateau au lof. Réduis la toile à l’avant et choque un peu la GV, ou change de cap pour prendre les vagues plus de l’arrière.');
+  if(p.dead>0)out.push('Vent arrière pile : le pilote risque l’empannage. Vise plutôt 160°, ou installe une retenue de bôme.');
+  if(S.hs>=1.5&&wA<60)out.push('Mer de face : abats de quelques degrés pour que le bateau tape moins, et augmente la sensibilité du pilote.');
+  if(out.length===1)out.push('Bateau équilibré : le pilote travaille peu.');
+  return out;
 }
+
+/* Conseil de voilure sur la vue du bateau */
+function sailPlanTxt(s){
+  const gv=['GV haute','GV 1 ris','GV 2 ris','GV 3 ris'][s.ris];
+  let av=SAILS[s.av].name;
+  if(s.av==='genois'&&s.enrouleur<100)av+=' roulé à '+s.enrouleur+' %';
+  if(s.av==='trinq'&&s.risT)av+=' avec 1 ris';
+  return gv+' + '+av.charAt(0).toLowerCase()+av.slice(1);
+}
+function renderAdvice(){
+  const box=$('sail-advice'), ap=$('apply-advice');
+  if(!best||best.key!==JSON.stringify([S,W])){box.innerHTML='<span class="k">Conseil de voilure</span>Calcul en cours…';ap.hidden=true;return}
+  const top=best.list[0], cur=best.list.find(x=>x.id===S.av), now=R.bs;
+  const rec=top.sc-cur.sc>.1?top:cur; recPlan=rec.s;
+  const same=rec.id===S.av&&rec.s.ris===S.ris&&(S.av!=='genois'||Math.abs(rec.s.enrouleur-S.enrouleur)<15)&&(S.av!=='trinq'||rec.s.risT===S.risT);
+  const head='<span class="k">Conseil de voilure'+(S.pilote?' · sous pilote':'')+'</span>';
+  const pil=S.pilote?' Charge du pilote : '+loadTxt(R.pilotLoad)+(same?'':' → '+loadTxt(rec.load))+'.':'';
+  if(same){
+    box.innerHTML=head+'Bonne voilure : <b>'+sailPlanTxt(S)+'</b>. Bien réglée, ≈ '+fr1(rec.bs,1)+' nds (actuellement '+fr1(now,1)+').'+pil;
+    ap.hidden=true;
+  } else {
+    box.innerHTML=head+'Passe à <b>'+sailPlanTxt(rec.s)+'</b> : ≈ '+fr1(rec.bs,1)+' nds bien réglé (actuellement '+fr1(now,1)+').'+pil;
+    ap.hidden=false;
+  }
+}
+let recPlan=null;
+$('opt2').addEventListener('click',()=>{S=optimize(S);syncInputs();update()});
+$('apply-advice').addEventListener('click',()=>{if(!recPlan)return;S=optimize(Object.assign({},recPlan));syncInputs();update()});
+
 /* Onglets (téléphone) */
 let tab='reglages';
 try{tab=localStorage.getItem('f325-tab')||tab}catch(e){}
@@ -600,6 +1067,22 @@ async function keepAwake(){try{if('wakeLock' in navigator&&!lock&&document.visib
 document.addEventListener('pointerdown',keepAwake,{passive:true});
 document.addEventListener('visibilitychange',keepAwake);
 
+/* Animation */
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;const t=reduce?0:now/1000;
+  animTT(reduce?0:now/1000);
+  if(!reduce)wavePhase=(wavePhase+sea.speed*dt)%sea.gap;
+  const tx=-sea.dy, ty=sea.dx;
+  waveEls.forEach((l,i)=>{const off=(i-4)*sea.gap+wavePhase, cx=CX+sea.dx*off, cy=CY+sea.dy*off;
+    setL(l,(cx-tx*420).toFixed(1),(cy-ty*420).toFixed(1),(cx+tx*420).toFixed(1),(cy+ty*420).toFixed(1))});
+  const sp=Math.hypot(flow.x,flow.y)||1, ux=flow.x/sp, uy=flow.y/sp, v=reduce?0:(30+sp*6)*dt;
+  for(const p of parts){p.x+=ux*v;p.y+=uy*v;
+    if(p.x<-20)p.x+=600;if(p.x>580)p.x-=600;if(p.y<-20)p.y+=600;if(p.y>580)p.y-=600;
+    setL(p.el,p.x,p.y,p.x-ux*12,p.y-uy*12)}
+  requestAnimationFrame(frame);
+}
 syncInputs();update();requestAnimationFrame(frame);
 })();
 </script>
